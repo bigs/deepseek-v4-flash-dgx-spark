@@ -1,5 +1,6 @@
 FROM vllm/vllm-openai:v0.17.1-cu130
 
+RUN python3 -m pip install --no-cache-dir uv
 RUN python3 -m pip install --no-cache-dir tilelang==0.1.8
 
-ENV PYTHONPATH=/repo/spark_runtime
+ENV PYTHONPATH=/repo:/repo/spark_runtime

@@ -167,12 +167,25 @@ Keep these behind engine interfaces so HTTP behavior does not change:
 ## First Serving Milestones
 
 - `S1`: persistent CLI loads once and generates multiple turns without restart.
-- `S2`: `/v1/models` and non-streaming `/v1/chat/completions` work.
-- `S3`: streaming SSE `/v1/chat/completions` works.
-- `S4`: one-session persistent KV reuse works; second request appends to cached
+- `S2`: done, `/v1/models` and non-streaming `/v1/chat/completions` work.
+- `S3`: implemented in the server harness; tested with a fake engine locally.
+- `S4`: done, one-session persistent KV reuse works; second request appends to cached
   prefix without full-prefix prefill.
-- `S5`: FIFO queue, max queue depth, timeout, and disconnect cancellation work.
+- `S5`: partial, single-worker FIFO behavior and max queue depth exist; request
+  timeout and disconnect cancellation still need hardening. Model work now runs
+  on a dedicated worker thread so the HTTP event loop remains responsive.
 - `S6`: per-request metrics identify prefill, decode, expert load, and attention
   costs.
-- `S7`: first optimization pass replaces one measured bottleneck without
-  changing API behavior.
+- `S7`: done, deferred cache lookahead replaces the measured cached-resume
+  forward when there is idle time before the next turn.
+
+See `docs/experiments/005-mvp-server-http.md` for the first successful HTTP
+probe on `spark-66c9`.
+See `docs/experiments/006-deferred-cache-lookahead.md` for the first measured
+serving optimization.
+See `docs/experiments/007-dedicated-engine-worker.md` for the worker-thread
+server cleanup.
+See `docs/chat-template.md` for the official DeepSeek-V4 message encoding
+surface used by `/v1/chat/completions`.
+See `docs/experiments/008-chat-until-stop.md` for the first API run that
+decoded until the DeepSeek EOS token.

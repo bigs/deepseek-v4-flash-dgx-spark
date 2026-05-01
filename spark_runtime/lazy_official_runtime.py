@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import csv
 import json
-import os
 import sys
 from collections import defaultdict
 from dataclasses import dataclass
@@ -13,7 +12,6 @@ from typing import Any
 
 import torch
 import torch.distributed as dist
-import torch.nn.functional as F
 from safetensors.torch import safe_open
 
 
