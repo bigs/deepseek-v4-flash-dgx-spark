@@ -7,11 +7,14 @@ import os
 import sys
 import threading
 import time
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
 from transformers import AutoTokenizer
+
+from spark_runtime.telemetry import TelemetryConfig, TelemetryRecorder
 
 
 CachePolicy = Literal["reuse", "reset", "none"]
@@ -25,6 +28,7 @@ class EngineConfig:
     config: Path
     max_seq_len: int = 1_048_576
     postfill_mode: Literal["deferred", "inline", "off"] = "deferred"
+    telemetry: TelemetryConfig = field(default_factory=TelemetryConfig.from_env)
 
 
 @dataclass
@@ -38,6 +42,7 @@ class SessionState:
 
 @dataclass
 class GenerateResult:
+    request_id: str
     prompt_token_ids: list[int]
     generated_token_ids: list[int]
     generated_text: str
@@ -45,8 +50,9 @@ class GenerateResult:
     finish_reason: Literal["stop", "length"]
     reused_prefix_tokens: int
     newly_prefilled_tokens: int
-    timings: dict[str, float]
+    timings: dict[str, Any]
     memory: dict[str, tuple[int, int]]
+    telemetry: dict[str, Any] = field(default_factory=dict)
     parsed_message: dict[str, Any] | None = None
     deferred_postfill_session_id: str | None = None
     deferred_postfill_token_ids: list[int] | None = None
@@ -66,6 +72,7 @@ class DeepSeekSparkEngine:
         self.sessions: dict[str, SessionState] = {}
         self.active_session_id: str | None = None
         self._lock = threading.RLock()
+        self.telemetry = TelemetryRecorder(config.telemetry)
 
     @property
     def loaded(self) -> bool:
@@ -78,20 +85,31 @@ class DeepSeekSparkEngine:
         from spark_runtime.lazy_official_runtime import build_lazy_model
 
         start = time.monotonic()
-        self.model, self.model_args, self.load_counts, self.weight_store = build_lazy_model(
-            self.config.model_dir,
-            self.config.inference_dir,
-            self.config.manifest_csv,
-            self.config.config,
-            self.config.max_seq_len,
-        )
-        torch.set_default_device("cuda")
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            self.config.model_dir,
-            trust_remote_code=True,
-        )
-        self.stop_token_ids = self._load_stop_token_ids()
+        memory_before = torch.cuda.mem_get_info() if torch.cuda.is_available() else None
+        with self.telemetry.nvtx("engine.load"):
+            self.model, self.model_args, self.load_counts, self.weight_store = build_lazy_model(
+                self.config.model_dir,
+                self.config.inference_dir,
+                self.config.manifest_csv,
+                self.config.config,
+                self.config.max_seq_len,
+            )
+            torch.set_default_device("cuda")
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.config.model_dir,
+                trust_remote_code=True,
+            )
+            self.stop_token_ids = self._load_stop_token_ids()
         self.load_seconds = time.monotonic() - start
+        memory_after = torch.cuda.mem_get_info() if torch.cuda.is_available() else None
+        self.telemetry.emit(
+            {
+                "event": "engine_load",
+                "load_seconds": self.load_seconds,
+                "memory": {"before": memory_before, "after": memory_after},
+                "load_counts": self.load_counts,
+            }
+        )
 
     def close(self) -> None:
         if self.weight_store is not None:
@@ -173,18 +191,24 @@ class DeepSeekSparkEngine:
     ) -> GenerateResult:
         import torch
 
-        self.load()
+        request_id = uuid.uuid4().hex
+        total_start = time.monotonic()
+        with self.telemetry.nvtx("engine.ensure_loaded", request_id=request_id):
+            self.load()
         if max_tokens < 0:
             raise ValueError("max_tokens must be non-negative")
 
-        timings: dict[str, float] = {}
+        timings: dict[str, Any] = {}
         memory: dict[str, tuple[int, int]] = {"before": torch.cuda.mem_get_info()}
-        prompt_token_ids = self.encode(
-            prompt=prompt,
-            messages=messages,
-            thinking_mode=thinking_mode,
-            reasoning_effort=reasoning_effort,
-        )
+        encode_start = time.monotonic()
+        with self.telemetry.nvtx("engine.encode", request_id=request_id):
+            prompt_token_ids = self.encode(
+                prompt=prompt,
+                messages=messages,
+                thinking_mode=thinking_mode,
+                reasoning_effort=reasoning_effort,
+            )
+        timings["encode_seconds"] = time.monotonic() - encode_start
         if len(prompt_token_ids) > self.config.max_seq_len:
             raise ValueError(
                 f"prompt has {len(prompt_token_ids)} tokens, max_seq_len={self.config.max_seq_len}"
@@ -197,58 +221,103 @@ class DeepSeekSparkEngine:
         prefill_start = time.monotonic()
         logits = None
         cache_resume_hit = False
-        with torch.inference_mode():
-            if newly_prefilled_tokens:
-                input_ids = torch.tensor(
-                    [prompt_token_ids[reused_prefix_tokens:]],
-                    dtype=torch.long,
-                    device="cuda",
-                )
-                logits = self.model(input_ids, reused_prefix_tokens)
-            elif prompt_token_ids and session.next_logits is not None:
-                logits = session.next_logits
-                cache_resume_hit = True
-            elif prompt_token_ids:
-                # Fallback for a cache slot that has token ids but no stored
-                # next-token logits. This consumes only the final cached token,
-                # not the full prefix.
-                input_ids = torch.tensor([[prompt_token_ids[-1]]], dtype=torch.long, device="cuda")
-                logits = self.model(input_ids, len(prompt_token_ids) - 1)
+        with self.telemetry.nvtx(
+            "engine.prefill",
+            request_id=request_id,
+            new_tokens=newly_prefilled_tokens,
+            reused_tokens=reused_prefix_tokens,
+        ):
+            with self.telemetry.cuda_timer(torch) as prefill_cuda:
+                with torch.inference_mode():
+                    if newly_prefilled_tokens:
+                        input_ids = torch.tensor(
+                            [prompt_token_ids[reused_prefix_tokens:]],
+                            dtype=torch.long,
+                            device="cuda",
+                        )
+                        logits = self.model(input_ids, reused_prefix_tokens)
+                    elif prompt_token_ids and session.next_logits is not None:
+                        logits = session.next_logits
+                        cache_resume_hit = True
+                    elif prompt_token_ids:
+                        # Fallback for a cache slot that has token ids but no stored
+                        # next-token logits. This consumes only the final cached token,
+                        # not the full prefix.
+                        input_ids = torch.tensor(
+                            [[prompt_token_ids[-1]]], dtype=torch.long, device="cuda"
+                        )
+                        logits = self.model(input_ids, len(prompt_token_ids) - 1)
         timings["prefill_seconds"] = time.monotonic() - prefill_start
+        timings["prefill_cuda_ms"] = prefill_cuda.elapsed_ms
         timings["cache_resume_hit"] = float(cache_resume_hit)
 
         generated: list[int] = []
         finish_reason: Literal["stop", "length"] = "length"
+        decode_step_wall_seconds: list[float] = []
+        decode_step_cuda_ms: list[float | None] = []
         decode_start = time.monotonic()
-        with torch.inference_mode():
-            for step in range(max_tokens):
-                if logits is None:
-                    break
-                next_token = int(logits.argmax(dim=-1).item())
-                generated.append(next_token)
-                if next_token in self.stop_token_ids:
-                    finish_reason = "stop"
-                    break
-                if step + 1 < max_tokens:
-                    decode_input = torch.tensor([[next_token]], dtype=torch.long, device="cuda")
-                    logits = self.model(decode_input, len(prompt_token_ids) + step)
+        with self.telemetry.nvtx("engine.decode", request_id=request_id, max_tokens=max_tokens):
+            with self.telemetry.cuda_timer(torch) as decode_cuda:
+                with torch.inference_mode():
+                    for step in range(max_tokens):
+                        if logits is None:
+                            break
+                        step_start = time.monotonic()
+                        with self.telemetry.nvtx(
+                            "engine.decode_step",
+                            request_id=request_id,
+                            step=step,
+                        ):
+                            next_token = int(logits.argmax(dim=-1).item())
+                            generated.append(next_token)
+                            if next_token in self.stop_token_ids:
+                                finish_reason = "stop"
+                            elif step + 1 < max_tokens:
+                                with self.telemetry.cuda_timer(torch) as step_cuda:
+                                    decode_input = torch.tensor(
+                                        [[next_token]], dtype=torch.long, device="cuda"
+                                    )
+                                    logits = self.model(
+                                        decode_input, len(prompt_token_ids) + step
+                                    )
+                                if step < self.telemetry.config.decode_step_limit:
+                                    decode_step_cuda_ms.append(step_cuda.elapsed_ms)
+                            if step < self.telemetry.config.decode_step_limit:
+                                decode_step_wall_seconds.append(time.monotonic() - step_start)
+                            if finish_reason == "stop":
+                                break
         timings["decode_seconds"] = time.monotonic() - decode_start
+        timings["decode_cuda_ms"] = decode_cuda.elapsed_ms
+        timings["decode_step_count_recorded"] = len(decode_step_wall_seconds)
+        timings["decode_step_wall_seconds"] = decode_step_wall_seconds
+        timings["decode_step_cuda_ms"] = decode_step_cuda_ms
 
         full_token_ids = prompt_token_ids + generated
         next_logits_valid = not generated
         deferred_postfill_token_ids = None
         if cache_policy != "none":
             postfill_start = time.monotonic()
-            if generated and self.config.postfill_mode == "inline":
-                if finish_reason != "stop":
-                    with torch.inference_mode():
-                        input_ids = torch.tensor([[generated[-1]]], dtype=torch.long, device="cuda")
-                        logits = self.model(input_ids, len(prompt_token_ids) + len(generated) - 1)
-                    next_logits_valid = True
-            elif generated and self.config.postfill_mode == "deferred":
-                if finish_reason != "stop":
-                    deferred_postfill_token_ids = full_token_ids.copy()
+            with self.telemetry.nvtx(
+                "engine.postfill",
+                request_id=request_id,
+                mode=self.config.postfill_mode,
+            ):
+                with self.telemetry.cuda_timer(torch) as postfill_cuda:
+                    if generated and self.config.postfill_mode == "inline":
+                        if finish_reason != "stop":
+                            with torch.inference_mode():
+                                input_ids = torch.tensor(
+                                    [[generated[-1]]], dtype=torch.long, device="cuda"
+                                )
+                                logits = self.model(
+                                    input_ids, len(prompt_token_ids) + len(generated) - 1
+                                )
+                            next_logits_valid = True
+                    elif generated and self.config.postfill_mode == "deferred":
+                        if finish_reason != "stop":
+                            deferred_postfill_token_ids = full_token_ids.copy()
             timings["postfill_seconds"] = time.monotonic() - postfill_start
+            timings["postfill_cuda_ms"] = postfill_cuda.elapsed_ms
             session.token_ids = full_token_ids
             session.cache_valid = True
             session.next_logits = logits if next_logits_valid else None
@@ -266,7 +335,30 @@ class DeepSeekSparkEngine:
             else None
         )
         memory["after"] = torch.cuda.mem_get_info()
+        timings["total_seconds"] = time.monotonic() - total_start
+        telemetry_event = {
+            "event": "engine_generate",
+            "request_id": request_id,
+            "session_id": session_id,
+            "input_mode": "chat" if messages is not None else "completion",
+            "cache_policy": cache_policy,
+            "thinking_mode": thinking_mode,
+            "reasoning_effort": reasoning_effort,
+            "prompt_tokens": len(prompt_token_ids),
+            "generated_tokens": len(generated),
+            "total_tokens": len(full_token_ids),
+            "finish_reason": finish_reason,
+            "stop_token_ids": sorted(self.stop_token_ids),
+            "reused_prefix_tokens": reused_prefix_tokens,
+            "newly_prefilled_tokens": newly_prefilled_tokens,
+            "cache_resume_hit": cache_resume_hit,
+            "deferred_postfill_scheduled": deferred_postfill_token_ids is not None,
+            "timings": timings,
+            "memory": memory,
+        }
+        self.telemetry.emit(telemetry_event)
         return GenerateResult(
+            request_id=request_id,
             prompt_token_ids=prompt_token_ids,
             generated_token_ids=generated,
             generated_text=generated_text,
@@ -276,6 +368,7 @@ class DeepSeekSparkEngine:
             newly_prefilled_tokens=newly_prefilled_tokens,
             timings=timings,
             memory=memory,
+            telemetry=telemetry_event,
             parsed_message=parsed_message,
             deferred_postfill_session_id=session_id if deferred_postfill_token_ids else None,
             deferred_postfill_token_ids=deferred_postfill_token_ids,
@@ -309,11 +402,25 @@ class DeepSeekSparkEngine:
             session.pending_postfill = False
             return True
 
-        with torch.inference_mode():
-            input_ids = torch.tensor([[expected_token_ids[-1]]], dtype=torch.long, device="cuda")
-            session.next_logits = self.model(input_ids, len(expected_token_ids) - 1)
+        with self.telemetry.nvtx("engine.deferred_postfill", session_id=session_id):
+            postfill_start = time.monotonic()
+            with self.telemetry.cuda_timer(torch) as postfill_cuda:
+                with torch.inference_mode():
+                    input_ids = torch.tensor(
+                        [[expected_token_ids[-1]]], dtype=torch.long, device="cuda"
+                    )
+                    session.next_logits = self.model(input_ids, len(expected_token_ids) - 1)
         session.pending_postfill = False
         session.last_access = time.monotonic()
+        self.telemetry.emit(
+            {
+                "event": "engine_deferred_postfill",
+                "session_id": session_id,
+                "tokens": len(expected_token_ids),
+                "postfill_seconds": time.monotonic() - postfill_start,
+                "postfill_cuda_ms": postfill_cuda.elapsed_ms,
+            }
+        )
         return True
 
     def encode(

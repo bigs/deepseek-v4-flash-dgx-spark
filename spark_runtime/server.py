@@ -168,8 +168,9 @@ def create_app(engine: DeepSeekSparkEngine | None = None) -> FastAPI:
         req: ChatCompletionRequest,
         request: Request,
     ):
+        request_start = time.monotonic()
         messages = _encoding_messages(req)
-        async with _queue_slot(app):
+        async with _queue_slot(app) as queue_wait_seconds:
             result = await _generate_or_500(
                 app.state.engine.generate(
                     messages=messages,
@@ -180,6 +181,7 @@ def create_app(engine: DeepSeekSparkEngine | None = None) -> FastAPI:
                     reasoning_effort=req.spark_reasoning_effort,
                 )
             )
+        _record_request_timings(result, request_start, queue_wait_seconds)
         _schedule_deferred_postfill(app, result)
         if req.stream:
             return _stream_chat_response(result, request)
@@ -190,7 +192,8 @@ def create_app(engine: DeepSeekSparkEngine | None = None) -> FastAPI:
         req: CompletionRequest,
         request: Request,
     ):
-        async with _queue_slot(app):
+        request_start = time.monotonic()
+        async with _queue_slot(app) as queue_wait_seconds:
             result = await _generate_or_500(
                 app.state.engine.generate(
                     prompt=req.prompt,
@@ -199,6 +202,7 @@ def create_app(engine: DeepSeekSparkEngine | None = None) -> FastAPI:
                     cache_policy=req.spark_cache_policy,
                 )
             )
+        _record_request_timings(result, request_start, queue_wait_seconds)
         _schedule_deferred_postfill(app, result)
         if req.stream:
             return _stream_completion_response(result, request)
@@ -257,12 +261,13 @@ async def _call_engine_method(engine, method_name: str, *args, **kwargs):
 
 @asynccontextmanager
 async def _queue_slot(app: FastAPI):
+    queue_start = time.monotonic()
     async with app.state.queue_lock:
         if app.state.pending_requests >= app.state.max_queue_size:
             raise HTTPException(status_code=429, detail="generation queue is full")
         app.state.pending_requests += 1
     try:
-        yield
+        yield time.monotonic() - queue_start
     finally:
         async with app.state.queue_lock:
             app.state.pending_requests -= 1
@@ -283,6 +288,11 @@ def _usage(result) -> dict[str, int]:
         "completion_tokens": len(result.generated_token_ids),
         "total_tokens": len(result.prompt_token_ids) + len(result.generated_token_ids),
     }
+
+
+def _record_request_timings(result, request_start: float, queue_wait_seconds: float) -> None:
+    result.timings["queue_wait_seconds"] = queue_wait_seconds
+    result.timings["request_wall_seconds"] = time.monotonic() - request_start
 
 
 def _chat_response(model: str, result) -> JSONResponse:
@@ -336,6 +346,7 @@ def _completion_response(model: str, result) -> JSONResponse:
 
 def _metrics(result) -> dict[str, Any]:
     return {
+        "request_id": getattr(result, "request_id", None),
         "reused_prefix_tokens": result.reused_prefix_tokens,
         "newly_prefilled_tokens": result.newly_prefilled_tokens,
         "generated_token_ids": result.generated_token_ids,
