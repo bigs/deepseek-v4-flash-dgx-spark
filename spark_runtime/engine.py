@@ -538,9 +538,7 @@ def config_from_env() -> EngineConfig:
     return EngineConfig(
         model_dir=model_dir,
         inference_dir=Path(os.getenv("DEEPSEEK_SPARK_INFERENCE_DIR", str(model_dir / "inference"))),
-        manifest_csv=Path(
-            os.getenv("DEEPSEEK_SPARK_MANIFEST_CSV", "/repo/results/spark-66c9/weight-manifest.csv")
-        ),
+        manifest_csv=Path(os.getenv("DEEPSEEK_SPARK_MANIFEST_CSV", "/repo/weight-manifest.csv")),
         config=Path(os.getenv("DEEPSEEK_SPARK_CONFIG", str(model_dir / "inference/config.json"))),
         max_seq_len=int(os.getenv("DEEPSEEK_SPARK_MAX_SEQ_LEN", "1048576")),
         postfill_mode=os.getenv("DEEPSEEK_SPARK_POSTFILL_MODE", "deferred"),
