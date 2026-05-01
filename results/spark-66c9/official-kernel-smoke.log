@@ -1,0 +1,77 @@
+==== 2026-05-01T14:47:32-04:00 guarded docker run start ====
+command: docker run --rm --name official-kernel-smoke7 --runtime=nvidia --gpus all --memory 16g --memory-swap 18g -v /home/cole/models/deepseek-v4-flash/hf:/model:ro -v /home/cole/deepseek-v4-flash-dgx-spark:/repo:ro -e PYTHONPATH=/repo/spark_runtime:/model/inference --entrypoint python3 deepseek-v4-flash-spark:tilelang /repo/scripts/smoke_official_kernels.py --inference-dir /model/inference
+guard: memory=16g memory_swap=18g min_mem_available_gib=64.0 timeout_seconds=420.0
+[2026-05-01T14:47:32-04:00] guard: initial MemAvailable=117.85 GiB
+[2026-05-01T14:47:32-04:00] guard: elapsed=0.0s MemAvailable=117.85 GiB
+[2026-05-01T14:47:34-04:00] guard: elapsed=2.0s MemAvailable=117.84 GiB
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:435: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  queued_call()
+[2026-05-01T14:47:36-04:00] guard: elapsed=4.0s MemAvailable=117.57 GiB
+[2026-05-01T14:47:38-04:00] guard: elapsed=6.0s MemAvailable=117.54 GiB
+[2026-05-01T14:47:40-04:00] guard: elapsed=8.0s MemAvailable=117.21 GiB
+[2026-05-01T14:47:42-04:00] guard: elapsed=10.0s MemAvailable=117.20 GiB
+[2026-05-01T14:47:44-04:00] guard: elapsed=12.0s MemAvailable=117.14 GiB
+[2026-05-01T14:47:46-04:00] guard: elapsed=14.0s MemAvailable=116.92 GiB
+[2026-05-01T14:47:48-04:00] guard: elapsed=16.0s MemAvailable=116.90 GiB
+[2026-05-01T14:47:50-04:00] guard: elapsed=18.0s MemAvailable=116.56 GiB
+[2026-05-01T14:47:52-04:00] guard: elapsed=20.0s MemAvailable=116.59 GiB
+[2026-05-01T14:47:54-04:00] guard: elapsed=22.0s MemAvailable=116.62 GiB
+[2026-05-01T14:47:56-04:00] guard: elapsed=24.0s MemAvailable=116.49 GiB
+[2026-05-01T14:47:58-04:00] guard: elapsed=26.0s MemAvailable=116.54 GiB
+[2026-05-01T14:48:00-04:00] guard: elapsed=28.0s MemAvailable=116.20 GiB
+[2026-05-01T14:48:02-04:00] guard: elapsed=30.0s MemAvailable=116.24 GiB
+[2026-05-01T14:48:04-04:00] guard: elapsed=32.0s MemAvailable=116.28 GiB
+[18:48:06] /project/src/transform/thread_storage_sync.cc:841: Warning: [ThreadSync] Hoisting sync from inside if to before if. Condition depends on runtime value: thread_binding % 32 // 4 == 0
+[2026-05-01T14:48:06-04:00] guard: elapsed=34.0s MemAvailable=116.33 GiB
+[18:48:06] /project/src/transform/thread_storage_sync.cc:841: Warning: [ThreadSync] Hoisting sync from inside if to before if. Condition depends on runtime value: thread_binding % 32 // 4 == 0
+[18:48:07] /project/src/transform/thread_storage_sync.cc:841: Warning: [ThreadSync] Hoisting sync from inside if to before if. Condition depends on runtime value: thread_binding % 32 // 4 == 0
+[2026-05-01T14:48:08-04:00] guard: elapsed=36.0s MemAvailable=116.29 GiB
+[2026-05-01T14:48:10-04:00] guard: elapsed=38.0s MemAvailable=115.91 GiB
+[2026-05-01T14:48:12-04:00] guard: elapsed=40.0s MemAvailable=116.09 GiB
+[2026-05-01T14:48:14-04:00] guard: elapsed=42.0s MemAvailable=116.17 GiB
+[2026-05-01T14:48:16-04:00] guard: elapsed=44.0s MemAvailable=116.15 GiB
+[2026-05-01T14:48:18-04:00] guard: elapsed=46.0s MemAvailable=116.00 GiB
+torch 2.10.0+cu130 cuda 13.0
+device NVIDIA GB10 (12, 1)
+mem_initial (123953352704, 130663661568)
+act_quant torch.Size([2, 128]) torch.float8_e4m3fn torch.Size([2, 1]) torch.float32
+fp4_act_quant torch.Size([2, 64]) torch.float4_e2m1fn_x2 torch.Size([2, 4]) torch.float8_e8m0fnu
+fp8_gemm torch.Size([2, 64]) torch.bfloat16 1620.5224609375
+fp4_gemm torch.Size([2, 64]) torch.bfloat16 18.909317016601562
+sparse_attn torch.Size([1, 2, 16, 512]) torch.bfloat16 0.1591687649488449
+hc_split_sinkhorn torch.Size([1, 2, 4]) torch.Size([1, 2, 4]) torch.Size([1, 2, 4, 4]) 0.9999989867210388
+mem_final (122302599168, 130663661568)
+[2026-05-01T14:48:20-04:00] guard: docker exited return_code=0 reason=process exited
+[2026-05-01T14:48:20-04:00] guard: recovering NVIDIA driver memory
+[2026-05-01T14:48:20-04:00] guard: sudo -n systemctl stop nvidia-persistenced
+[2026-05-01T14:48:20-04:00] guard: sudo -n modprobe -r nvidia_uvm nvidia_drm nvidia_modeset nvidia
+[2026-05-01T14:48:21-04:00] guard: sudo -n modprobe nvidia
+[2026-05-01T14:48:24-04:00] guard: sudo -n modprobe nvidia_uvm
+[2026-05-01T14:48:25-04:00] guard: sudo -n systemctl start nvidia-persistenced
+               total        used        free      shared  buff/cache   available
+Mem:           121Gi       4.5Gi       115Gi       2.1Mi       3.1Gi       117Gi
+Swap:           15Gi          0B        15Gi
+Fri May  1 14:48:25 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 590.48.01              Driver Version: 590.48.01      CUDA Version: 13.1     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GB10                    On  |   0000000F:01:00.0 Off |                  N/A |
+| N/A   42C    P0             14W /  N/A  | Not Supported          |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

@@ -1,0 +1,15 @@
+==== 2026-05-01T14:31:17-04:00 guarded docker run start ====
+command: docker run --rm --name torch-mem-probe-after-driver-reload --runtime=nvidia --gpus all --memory 4g --memory-swap 4g --entrypoint python3 lmsysorg/sglang:spark -c 'import torch; print(torch.cuda.is_available()); print(torch.cuda.mem_get_info() if torch.cuda.is_available() else None)'
+guard: memory=4g memory_swap=4g min_mem_available_gib=16.0 timeout_seconds=60.0
+[2026-05-01T14:31:17-04:00] guard: initial MemAvailable=118.45 GiB
+[2026-05-01T14:31:17-04:00] guard: elapsed=0.0s MemAvailable=118.45 GiB
+[2026-05-01T14:31:19-04:00] guard: elapsed=2.0s MemAvailable=118.14 GiB
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:283: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  warnings.warn(
+True
+(125522702336, 130663661568)
+[2026-05-01T14:31:21-04:00] guard: docker exited return_code=0 reason=process exited

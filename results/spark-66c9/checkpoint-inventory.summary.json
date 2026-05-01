@@ -1,0 +1,877 @@
+{
+  "by_component": {
+    "auxiliary_heads": {
+      "bytes": 262164,
+      "count": 3,
+      "dtypes": {
+        "F32": {
+          "bytes": 262164,
+          "human": "256.02 KiB"
+        }
+      },
+      "human": "256.02 KiB"
+    },
+    "core_attention_dense": {
+      "bytes": 5400554112,
+      "count": 870,
+      "dtypes": {
+        "BF16": {
+          "bytes": 619363584,
+          "human": "590.67 MiB"
+        },
+        "F32": {
+          "bytes": 5683968,
+          "human": "5.42 MiB"
+        },
+        "F8_E4M3": {
+          "bytes": 4775215104,
+          "human": "4.45 GiB"
+        },
+        "F8_E8M0": {
+          "bytes": 291456,
+          "human": "284.62 KiB"
+        }
+      },
+      "human": "5.03 GiB"
+    },
+    "core_hyper_correction": {
+      "bytes": 135275592,
+      "count": 258,
+      "dtypes": {
+        "F32": {
+          "bytes": 135275592,
+          "human": "129.01 MiB"
+        }
+      },
+      "human": "129.01 MiB"
+    },
+    "core_norms": {
+      "bytes": 704512,
+      "count": 86,
+      "dtypes": {
+        "BF16": {
+          "bytes": 704512,
+          "human": "688.00 KiB"
+        }
+      },
+      "human": "688.00 KiB"
+    },
+    "core_routed_experts": {
+      "bytes": 147169738752,
+      "count": 66048,
+      "dtypes": {
+        "F8_E8M0": {
+          "bytes": 8657043456,
+          "human": "8.06 GiB"
+        },
+        "I8": {
+          "bytes": 138512695296,
+          "human": "129.00 GiB"
+        }
+      },
+      "human": "137.06 GiB"
+    },
+    "core_router": {
+      "bytes": 108834816,
+      "count": 86,
+      "dtypes": {
+        "BF16": {
+          "bytes": 90177536,
+          "human": "86.00 MiB"
+        },
+        "F32": {
+          "bytes": 40960,
+          "human": "40.00 KiB"
+        },
+        "I64": {
+          "bytes": 18616320,
+          "human": "17.75 MiB"
+        }
+      },
+      "human": "103.79 MiB"
+    },
+    "core_shared_experts": {
+      "bytes": 1082196480,
+      "count": 258,
+      "dtypes": {
+        "F8_E4M3": {
+          "bytes": 1082130432,
+          "human": "1.01 GiB"
+        },
+        "F8_E8M0": {
+          "bytes": 66048,
+          "human": "64.50 KiB"
+        }
+      },
+      "human": "1.01 GiB"
+    },
+    "embeddings": {
+      "bytes": 1059061760,
+      "count": 1,
+      "dtypes": {
+        "BF16": {
+          "bytes": 1059061760,
+          "human": "1010.00 MiB"
+        }
+      },
+      "human": "1010.00 MiB"
+    },
+    "final_norm": {
+      "bytes": 8192,
+      "count": 1,
+      "dtypes": {
+        "BF16": {
+          "bytes": 8192,
+          "human": "8.00 KiB"
+        }
+      },
+      "human": "8.00 KiB"
+    },
+    "mtp_attention_dense": {
+      "bytes": 106964608,
+      "count": 13,
+      "dtypes": {
+        "BF16": {
+          "bytes": 3072,
+          "human": "3.00 KiB"
+        },
+        "F32": {
+          "bytes": 256,
+          "human": "256 B"
+        },
+        "F8_E4M3": {
+          "bytes": 106954752,
+          "human": "102.00 MiB"
+        },
+        "F8_E8M0": {
+          "bytes": 6528,
+          "human": "6.38 KiB"
+        }
+      },
+      "human": "102.01 MiB"
+    },
+    "mtp_hyper_correction": {
+      "bytes": 3408108,
+      "count": 9,
+      "dtypes": {
+        "F32": {
+          "bytes": 3408108,
+          "human": "3.25 MiB"
+        }
+      },
+      "human": "3.25 MiB"
+    },
+    "mtp_norms": {
+      "bytes": 40960,
+      "count": 5,
+      "dtypes": {
+        "BF16": {
+          "bytes": 40960,
+          "human": "40.00 KiB"
+        }
+      },
+      "human": "40.00 KiB"
+    },
+    "mtp_projection": {
+      "bytes": 33556480,
+      "count": 4,
+      "dtypes": {
+        "F8_E4M3": {
+          "bytes": 33554432,
+          "human": "32.00 MiB"
+        },
+        "F8_E8M0": {
+          "bytes": 2048,
+          "human": "2.00 KiB"
+        }
+      },
+      "human": "32.00 MiB"
+    },
+    "mtp_routed_experts": {
+      "bytes": 3422552064,
+      "count": 1536,
+      "dtypes": {
+        "F8_E8M0": {
+          "bytes": 201326592,
+          "human": "192.00 MiB"
+        },
+        "I8": {
+          "bytes": 3221225472,
+          "human": "3.00 GiB"
+        }
+      },
+      "human": "3.19 GiB"
+    },
+    "mtp_router": {
+      "bytes": 2098176,
+      "count": 2,
+      "dtypes": {
+        "BF16": {
+          "bytes": 2097152,
+          "human": "2.00 MiB"
+        },
+        "F32": {
+          "bytes": 1024,
+          "human": "1.00 KiB"
+        }
+      },
+      "human": "2.00 MiB"
+    },
+    "mtp_shared_experts": {
+      "bytes": 25167360,
+      "count": 6,
+      "dtypes": {
+        "F8_E4M3": {
+          "bytes": 25165824,
+          "human": "24.00 MiB"
+        },
+        "F8_E8M0": {
+          "bytes": 1536,
+          "human": "1.50 KiB"
+        }
+      },
+      "human": "24.00 MiB"
+    },
+    "output_head": {
+      "bytes": 1059061760,
+      "count": 1,
+      "dtypes": {
+        "BF16": {
+          "bytes": 1059061760,
+          "human": "1010.00 MiB"
+        }
+      },
+      "human": "1010.00 MiB"
+    }
+  },
+  "by_core_expert_layer_bytes": {
+    "0": 3422552064,
+    "1": 3422552064,
+    "10": 3422552064,
+    "11": 3422552064,
+    "12": 3422552064,
+    "13": 3422552064,
+    "14": 3422552064,
+    "15": 3422552064,
+    "16": 3422552064,
+    "17": 3422552064,
+    "18": 3422552064,
+    "19": 3422552064,
+    "2": 3422552064,
+    "20": 3422552064,
+    "21": 3422552064,
+    "22": 3422552064,
+    "23": 3422552064,
+    "24": 3422552064,
+    "25": 3422552064,
+    "26": 3422552064,
+    "27": 3422552064,
+    "28": 3422552064,
+    "29": 3422552064,
+    "3": 3422552064,
+    "30": 3422552064,
+    "31": 3422552064,
+    "32": 3422552064,
+    "33": 3422552064,
+    "34": 3422552064,
+    "35": 3422552064,
+    "36": 3422552064,
+    "37": 3422552064,
+    "38": 3422552064,
+    "39": 3422552064,
+    "4": 3422552064,
+    "40": 3422552064,
+    "41": 3422552064,
+    "42": 3422552064,
+    "5": 3422552064,
+    "6": 3422552064,
+    "7": 3422552064,
+    "8": 3422552064,
+    "9": 3422552064
+  },
+  "by_dtype": {
+    "BF16": {
+      "bytes": 2830518528,
+      "count": 433,
+      "human": "2.64 GiB"
+    },
+    "F32": {
+      "bytes": 144672072,
+      "count": 417,
+      "human": "137.97 MiB"
+    },
+    "F8_E4M3": {
+      "bytes": 6023020544,
+      "count": 375,
+      "human": "5.61 GiB"
+    },
+    "F8_E8M0": {
+      "bytes": 8858737664,
+      "count": 34167,
+      "human": "8.25 GiB"
+    },
+    "I64": {
+      "bytes": 18616320,
+      "count": 3,
+      "human": "17.75 MiB"
+    },
+    "I8": {
+      "bytes": 141733920768,
+      "count": 33792,
+      "human": "132.00 GiB"
+    }
+  },
+  "by_expert_matrix": {
+    "core_routed_experts.w1.scale": {
+      "bytes": 2885681152,
+      "human": "2.69 GiB"
+    },
+    "core_routed_experts.w1.weight": {
+      "bytes": 46170898432,
+      "human": "43.00 GiB"
+    },
+    "core_routed_experts.w2.scale": {
+      "bytes": 2885681152,
+      "human": "2.69 GiB"
+    },
+    "core_routed_experts.w2.weight": {
+      "bytes": 46170898432,
+      "human": "43.00 GiB"
+    },
+    "core_routed_experts.w3.scale": {
+      "bytes": 2885681152,
+      "human": "2.69 GiB"
+    },
+    "core_routed_experts.w3.weight": {
+      "bytes": 46170898432,
+      "human": "43.00 GiB"
+    },
+    "mtp_routed_experts.w1.scale": {
+      "bytes": 67108864,
+      "human": "64.00 MiB"
+    },
+    "mtp_routed_experts.w1.weight": {
+      "bytes": 1073741824,
+      "human": "1.00 GiB"
+    },
+    "mtp_routed_experts.w2.scale": {
+      "bytes": 67108864,
+      "human": "64.00 MiB"
+    },
+    "mtp_routed_experts.w2.weight": {
+      "bytes": 1073741824,
+      "human": "1.00 GiB"
+    },
+    "mtp_routed_experts.w3.scale": {
+      "bytes": 67108864,
+      "human": "64.00 MiB"
+    },
+    "mtp_routed_experts.w3.weight": {
+      "bytes": 1073741824,
+      "human": "1.00 GiB"
+    }
+  },
+  "by_layer_bytes": {
+    "0": 3566148952,
+    "1": 3566148952,
+    "10": 3589851224,
+    "11": 3568596312,
+    "12": 3589851224,
+    "13": 3568596312,
+    "14": 3589851224,
+    "15": 3568596312,
+    "16": 3589851224,
+    "17": 3568596312,
+    "18": 3589851224,
+    "19": 3568596312,
+    "2": 3596055640,
+    "20": 3589851224,
+    "21": 3568596312,
+    "22": 3589851224,
+    "23": 3568596312,
+    "24": 3589851224,
+    "25": 3568596312,
+    "26": 3589851224,
+    "27": 3568596312,
+    "28": 3589851224,
+    "29": 3568596312,
+    "3": 3568596312,
+    "30": 3589851224,
+    "31": 3568596312,
+    "32": 3589851224,
+    "33": 3568596312,
+    "34": 3589851224,
+    "35": 3568596312,
+    "36": 3589851224,
+    "37": 3568596312,
+    "38": 3589851224,
+    "39": 3568596312,
+    "4": 3589851224,
+    "40": 3589851224,
+    "41": 3568596312,
+    "42": 3589851224,
+    "5": 3568596312,
+    "6": 3589851224,
+    "7": 3568596312,
+    "8": 3589851224,
+    "9": 3568596312
+  },
+  "config": {
+    "architectures": [
+      "DeepseekV4ForCausalLM"
+    ],
+    "expert_dtype": "fp4",
+    "head_dim": 512,
+    "max_position_embeddings": 1048576,
+    "model_type": "deepseek_v4",
+    "moe_intermediate_size": 2048,
+    "n_routed_experts": 256,
+    "n_shared_experts": 1,
+    "num_experts_per_tok": 6,
+    "num_hidden_layers": 43,
+    "num_key_value_heads": 1,
+    "quantization_config": {
+      "activation_scheme": "dynamic",
+      "fmt": "e4m3",
+      "quant_method": "fp8",
+      "scale_fmt": "ue8m0",
+      "weight_block_size": [
+        128,
+        128
+      ]
+    },
+    "torch_dtype": "bfloat16"
+  },
+  "contiguity": {
+    "core_attention_dense": {
+      "bytes": 5400554112,
+      "component": "core_attention_dense",
+      "contiguous_runs": 172,
+      "files": 43,
+      "gap_bytes": 8883308104,
+      "max_gap": 201328128,
+      "nonzero_gaps": 129,
+      "tensor_count": 870
+    },
+    "core_routed_experts": {
+      "bytes": 147169738752,
+      "component": "core_routed_experts",
+      "contiguous_runs": 86,
+      "files": 43,
+      "gap_bytes": 5857411584,
+      "max_gap": 140510720,
+      "nonzero_gaps": 43,
+      "tensor_count": 66048
+    },
+    "core_shared_experts": {
+      "bytes": 1082196480,
+      "component": "core_shared_experts",
+      "contiguous_runs": 86,
+      "files": 43,
+      "gap_bytes": 4775215104,
+      "max_gap": 115343360,
+      "nonzero_gaps": 43,
+      "tensor_count": 258
+    },
+    "mtp_routed_experts": {
+      "bytes": 3422552064,
+      "component": "mtp_routed_experts",
+      "contiguous_runs": 2,
+      "files": 1,
+      "gap_bytes": 165677568,
+      "max_gap": 165677568,
+      "nonzero_gaps": 1,
+      "tensor_count": 1536
+    },
+    "mtp_shared_experts": {
+      "bytes": 25167360,
+      "component": "mtp_shared_experts",
+      "contiguous_runs": 2,
+      "files": 1,
+      "gap_bytes": 123732992,
+      "max_gap": 123732992,
+      "nonzero_gaps": 1,
+      "tensor_count": 6
+    }
+  },
+  "generated_at": "2026-05-01T17:43:03.260754+00:00",
+  "model_dir": "/home/cole/models/deepseek-v4-flash/hf",
+  "shards": {
+    "model-00001-of-00046.safetensors": {
+      "file_human": "1010.00 MiB",
+      "file_size": 1059061856,
+      "header_len": 88,
+      "payload_bytes": 1059061760,
+      "payload_human": "1010.00 MiB",
+      "tensor_count": 1
+    },
+    "model-00002-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3566321192,
+      "header_len": 172232,
+      "payload_bytes": 3566148952,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1565
+    },
+    "model-00003-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3566321192,
+      "header_len": 172232,
+      "payload_bytes": 3566148952,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1565
+    },
+    "model-00004-of-00046.safetensors": {
+      "file_human": "3.35 GiB",
+      "file_size": 3596229272,
+      "header_len": 173624,
+      "payload_bytes": 3596055640,
+      "payload_human": "3.35 GiB",
+      "tensor_count": 1576
+    },
+    "model-00005-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568768976,
+      "header_len": 172656,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00006-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590024776,
+      "header_len": 173544,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00007-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568768976,
+      "header_len": 172656,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00008-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590024776,
+      "header_len": 173544,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00009-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568768976,
+      "header_len": 172656,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00010-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590024776,
+      "header_len": 173544,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00011-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568768976,
+      "header_len": 172656,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00012-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00013-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00014-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00015-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00016-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00017-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00018-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00019-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00020-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00021-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00022-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00023-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00024-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00025-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00026-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00027-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00028-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00029-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00030-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00031-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00032-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00033-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00034-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00035-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00036-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00037-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00038-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00039-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00040-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00041-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00042-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00043-of-00046.safetensors": {
+      "file_human": "3.32 GiB",
+      "file_size": 3568770544,
+      "header_len": 174224,
+      "payload_bytes": 3568596312,
+      "payload_human": "3.32 GiB",
+      "tensor_count": 1569
+    },
+    "model-00044-of-00046.safetensors": {
+      "file_human": "3.34 GiB",
+      "file_size": 3590026352,
+      "header_len": 175120,
+      "payload_bytes": 3589851224,
+      "payload_human": "3.34 GiB",
+      "tensor_count": 1576
+    },
+    "model-00045-of-00046.safetensors": {
+      "file_human": "1010.26 MiB",
+      "file_size": 1059332516,
+      "header_len": 392,
+      "payload_bytes": 1059332116,
+      "payload_human": "1010.26 MiB",
+      "tensor_count": 5
+    },
+    "model-00046-of-00046.safetensors": {
+      "file_human": "3.35 GiB",
+      "file_size": 3593956092,
+      "header_len": 168328,
+      "payload_bytes": 3593787756,
+      "payload_human": "3.35 GiB",
+      "tensor_count": 1575
+    }
+  },
+  "totals": {
+    "payload_bytes": 159609485896,
+    "payload_human": "148.65 GiB",
+    "shard_count": 46,
+    "shard_file_bytes": 159617149040,
+    "shard_file_human": "148.66 GiB",
+    "tensor_count": 69187
+  }
+}

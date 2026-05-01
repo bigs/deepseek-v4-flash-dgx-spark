@@ -1,0 +1,79 @@
+==== 2026-05-01T14:50:54-04:00 guarded docker run start ====
+command: docker run --rm --name lazy-resident-load2 --runtime=nvidia --gpus all --memory 96g --memory-swap 104g -v /home/cole/models/deepseek-v4-flash/hf:/model:ro -v /home/cole/deepseek-v4-flash-dgx-spark:/repo:ro -e PYTHONPATH=/repo/spark_runtime:/model/inference --entrypoint python3 deepseek-v4-flash-spark:tilelang /repo/scripts/probe_lazy_resident_load.py --model-dir /model --inference-dir /model/inference --manifest-csv /repo/results/spark-66c9/weight-manifest.csv --config /model/inference/config.json --max-seq-len 1048576
+guard: memory=96g memory_swap=104g min_mem_available_gib=24.0 timeout_seconds=1800.0
+[2026-05-01T14:50:54-04:00] guard: initial MemAvailable=118.46 GiB
+[2026-05-01T14:50:54-04:00] guard: elapsed=0.0s MemAvailable=118.46 GiB
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:435: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  queued_call()
+[2026-05-01T14:50:56-04:00] guard: elapsed=2.0s MemAvailable=118.12 GiB
+/repo/spark_runtime/lazy_official_runtime.py:233: FutureWarning: torch.cuda._set_allocator_settings is deprecated. Use torch._C._accelerator_setAllocatorSettings instead.
+  torch.cuda.memory._set_allocator_settings("expandable_segments:True")
+[2026-05-01T14:50:58-04:00] guard: elapsed=4.0s MemAvailable=114.64 GiB
+[2026-05-01T14:51:00-04:00] guard: elapsed=6.0s MemAvailable=80.08 GiB
+[2026-05-01T14:51:02-04:00] guard: elapsed=8.0s MemAvailable=76.95 GiB
+[2026-05-01T14:51:04-04:00] guard: elapsed=10.0s MemAvailable=76.69 GiB
+[2026-05-01T14:51:06-04:00] guard: elapsed=12.0s MemAvailable=76.43 GiB
+[2026-05-01T14:51:08-04:00] guard: elapsed=14.0s MemAvailable=76.17 GiB
+[2026-05-01T14:51:10-04:00] guard: elapsed=16.0s MemAvailable=75.64 GiB
+[2026-05-01T14:51:12-04:00] guard: elapsed=18.0s MemAvailable=75.20 GiB
+[2026-05-01T14:51:14-04:00] guard: elapsed=20.0s MemAvailable=75.00 GiB
+[2026-05-01T14:51:16-04:00] guard: elapsed=22.0s MemAvailable=74.76 GiB
+[2026-05-01T14:51:18-04:00] guard: elapsed=24.0s MemAvailable=74.53 GiB
+[2026-05-01T14:51:20-04:00] guard: elapsed=26.0s MemAvailable=74.29 GiB
+[2026-05-01T14:51:22-04:00] guard: elapsed=28.0s MemAvailable=74.08 GiB
+[2026-05-01T14:51:24-04:00] guard: elapsed=30.0s MemAvailable=73.85 GiB
+[2026-05-01T14:51:26-04:00] guard: elapsed=32.0s MemAvailable=73.63 GiB
+[2026-05-01T14:51:28-04:00] guard: elapsed=34.0s MemAvailable=73.38 GiB
+[2026-05-01T14:51:30-04:00] guard: elapsed=36.0s MemAvailable=73.18 GiB
+[2026-05-01T14:51:32-04:00] guard: elapsed=38.0s MemAvailable=72.97 GiB
+[2026-05-01T14:51:34-04:00] guard: elapsed=40.0s MemAvailable=72.76 GiB
+[2026-05-01T14:51:36-04:00] guard: elapsed=42.0s MemAvailable=72.54 GiB
+[2026-05-01T14:51:38-04:00] guard: elapsed=44.0s MemAvailable=72.55 GiB
+[2026-05-01T14:51:40-04:00] guard: elapsed=46.0s MemAvailable=72.31 GiB
+[2026-05-01T14:51:42-04:00] guard: elapsed=48.0s MemAvailable=72.10 GiB
+[2026-05-01T14:51:44-04:00] guard: elapsed=50.0s MemAvailable=71.89 GiB
+[2026-05-01T14:51:46-04:00] guard: elapsed=52.0s MemAvailable=71.68 GiB
+[2026-05-01T14:51:48-04:00] guard: elapsed=54.0s MemAvailable=71.48 GiB
+[2026-05-01T14:51:50-04:00] guard: elapsed=56.0s MemAvailable=71.27 GiB
+[2026-05-01T14:51:52-04:00] guard: elapsed=58.0s MemAvailable=69.50 GiB
+mem_initial (123195158528, 130663661568)
+max_seq_len 1048576
+load_counts {'loaded': 1559}
+parameter_count 1559
+buffer_count 191
+mem_after_load (61779718144, 130663661568)
+[2026-05-01T14:51:54-04:00] guard: elapsed=60.0s MemAvailable=76.85 GiB
+[2026-05-01T14:51:56-04:00] guard: docker exited return_code=0 reason=process exited
+[2026-05-01T14:51:56-04:00] guard: recovering NVIDIA driver memory
+[2026-05-01T14:51:56-04:00] guard: sudo -n systemctl stop nvidia-persistenced
+[2026-05-01T14:51:56-04:00] guard: sudo -n modprobe -r nvidia_uvm nvidia_drm nvidia_modeset nvidia
+[2026-05-01T14:51:57-04:00] guard: sudo -n modprobe nvidia
+[2026-05-01T14:52:00-04:00] guard: sudo -n modprobe nvidia_uvm
+[2026-05-01T14:52:00-04:00] guard: sudo -n systemctl start nvidia-persistenced
+               total        used        free      shared  buff/cache   available
+Mem:           121Gi       3.9Gi       107Gi       2.1Mi        11Gi       117Gi
+Swap:           15Gi          0B        15Gi
+Fri May  1 14:52:01 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 590.48.01              Driver Version: 590.48.01      CUDA Version: 13.1     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GB10                    On  |   0000000F:01:00.0 Off |                  N/A |
+| N/A   42C    P0             14W /  N/A  | Not Supported          |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

@@ -1,0 +1,164 @@
+==== 2026-05-01T15:05:52-04:00 guarded docker run start ====
+command: docker run --rm --name lazy-generate-prompt-2tok --runtime=nvidia --gpus all --memory 104g --memory-swap 112g -v /home/cole/models/deepseek-v4-flash/hf:/model:ro -v /home/cole/deepseek-v4-flash-dgx-spark:/repo:ro -e PYTHONPATH=/repo/spark_runtime:/model/inference --entrypoint python3 deepseek-v4-flash-spark:tilelang /repo/scripts/probe_lazy_generate_token.py --model-dir /model --inference-dir /model/inference --manifest-csv /repo/results/spark-66c9/weight-manifest.csv --config /model/inference/config.json --max-seq-len 1048576 --prompt Hello --max-new-tokens 2
+guard: memory=104g memory_swap=112g min_mem_available_gib=16.0 timeout_seconds=5400.0
+[2026-05-01T15:05:52-04:00] guard: initial MemAvailable=118.34 GiB
+[2026-05-01T15:05:52-04:00] guard: elapsed=0.0s MemAvailable=118.34 GiB
+[2026-05-01T15:05:54-04:00] guard: elapsed=2.0s MemAvailable=118.02 GiB
+[2026-05-01T15:05:56-04:00] guard: elapsed=4.0s MemAvailable=117.99 GiB
+[2026-05-01T15:05:58-04:00] guard: elapsed=6.0s MemAvailable=117.99 GiB
+[2026-05-01T15:06:00-04:00] guard: elapsed=8.0s MemAvailable=117.96 GiB
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:435: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  queued_call()
+/repo/spark_runtime/lazy_official_runtime.py:262: FutureWarning: torch.cuda._set_allocator_settings is deprecated. Use torch._C._accelerator_setAllocatorSettings instead.
+  torch.cuda.memory._set_allocator_settings("expandable_segments:True")
+[2026-05-01T15:06:02-04:00] guard: elapsed=10.0s MemAvailable=117.66 GiB
+[2026-05-01T15:06:04-04:00] guard: elapsed=12.0s MemAvailable=102.50 GiB
+[2026-05-01T15:06:06-04:00] guard: elapsed=14.0s MemAvailable=76.90 GiB
+[2026-05-01T15:06:08-04:00] guard: elapsed=16.0s MemAvailable=76.66 GiB
+[2026-05-01T15:06:10-04:00] guard: elapsed=18.0s MemAvailable=76.42 GiB
+[2026-05-01T15:06:12-04:00] guard: elapsed=20.0s MemAvailable=76.17 GiB
+[2026-05-01T15:06:14-04:00] guard: elapsed=22.0s MemAvailable=75.68 GiB
+[2026-05-01T15:06:16-04:00] guard: elapsed=24.0s MemAvailable=75.43 GiB
+[2026-05-01T15:06:18-04:00] guard: elapsed=26.0s MemAvailable=75.21 GiB
+[2026-05-01T15:06:20-04:00] guard: elapsed=28.0s MemAvailable=74.98 GiB
+[2026-05-01T15:06:22-04:00] guard: elapsed=30.0s MemAvailable=74.77 GiB
+[2026-05-01T15:06:24-04:00] guard: elapsed=32.0s MemAvailable=74.54 GiB
+[2026-05-01T15:06:26-04:00] guard: elapsed=34.0s MemAvailable=74.33 GiB
+[2026-05-01T15:06:28-04:00] guard: elapsed=36.0s MemAvailable=74.10 GiB
+[2026-05-01T15:06:30-04:00] guard: elapsed=38.0s MemAvailable=73.64 GiB
+[2026-05-01T15:06:32-04:00] guard: elapsed=40.0s MemAvailable=73.42 GiB
+[2026-05-01T15:06:34-04:00] guard: elapsed=42.0s MemAvailable=73.21 GiB
+[2026-05-01T15:06:36-04:00] guard: elapsed=44.0s MemAvailable=73.00 GiB
+[2026-05-01T15:06:38-04:00] guard: elapsed=46.0s MemAvailable=72.79 GiB
+[2026-05-01T15:06:40-04:00] guard: elapsed=48.0s MemAvailable=72.57 GiB
+[2026-05-01T15:06:42-04:00] guard: elapsed=50.0s MemAvailable=72.32 GiB
+[2026-05-01T15:06:44-04:00] guard: elapsed=52.0s MemAvailable=72.10 GiB
+[2026-05-01T15:06:46-04:00] guard: elapsed=54.0s MemAvailable=71.86 GiB
+[2026-05-01T15:06:48-04:00] guard: elapsed=56.0s MemAvailable=71.66 GiB
+[2026-05-01T15:06:50-04:00] guard: elapsed=58.0s MemAvailable=71.43 GiB
+[2026-05-01T15:06:52-04:00] guard: elapsed=60.0s MemAvailable=71.22 GiB
+[2026-05-01T15:06:54-04:00] guard: elapsed=62.0s MemAvailable=71.02 GiB
+[2026-05-01T15:06:56-04:00] guard: elapsed=64.0s MemAvailable=67.95 GiB
+[2026-05-01T15:06:58-04:00] guard: elapsed=66.0s MemAvailable=67.61 GiB
+[2026-05-01T15:07:00-04:00] guard: elapsed=68.0s MemAvailable=67.56 GiB
+[2026-05-01T15:07:02-04:00] guard: elapsed=70.0s MemAvailable=67.17 GiB
+[2026-05-01T15:07:04-04:00] guard: elapsed=72.0s MemAvailable=67.00 GiB
+[2026-05-01T15:07:06-04:00] guard: elapsed=74.0s MemAvailable=66.84 GiB
+[2026-05-01T15:07:08-04:00] guard: elapsed=76.0s MemAvailable=66.55 GiB
+[2026-05-01T15:07:10-04:00] guard: elapsed=78.0s MemAvailable=66.58 GiB
+[2026-05-01T15:07:12-04:00] guard: elapsed=80.0s MemAvailable=66.31 GiB
+[2026-05-01T15:07:14-04:00] guard: elapsed=82.0s MemAvailable=66.24 GiB
+[2026-05-01T15:07:16-04:00] guard: elapsed=84.0s MemAvailable=66.23 GiB
+[2026-05-01T15:07:18-04:00] guard: elapsed=86.0s MemAvailable=65.75 GiB
+[2026-05-01T15:07:20-04:00] guard: elapsed=88.0s MemAvailable=65.95 GiB
+[2026-05-01T15:07:22-04:00] guard: elapsed=90.0s MemAvailable=65.97 GiB
+[2026-05-01T15:07:24-04:00] guard: elapsed=92.0s MemAvailable=65.98 GiB
+[2026-05-01T15:07:26-04:00] guard: elapsed=94.0s MemAvailable=66.08 GiB
+[2026-05-01T15:07:28-04:00] guard: elapsed=96.0s MemAvailable=66.09 GiB
+[2026-05-01T15:07:30-04:00] guard: elapsed=98.0s MemAvailable=65.72 GiB
+[2026-05-01T15:07:32-04:00] guard: elapsed=100.0s MemAvailable=65.88 GiB
+[2026-05-01T15:07:34-04:00] guard: elapsed=102.0s MemAvailable=65.93 GiB
+[2026-05-01T15:07:36-04:00] guard: elapsed=104.0s MemAvailable=65.83 GiB
+[2026-05-01T15:07:38-04:00] guard: elapsed=106.0s MemAvailable=65.62 GiB
+[2026-05-01T15:07:40-04:00] guard: elapsed=108.0s MemAvailable=65.20 GiB
+[2026-05-01T15:07:42-04:00] guard: elapsed=110.0s MemAvailable=65.34 GiB
+[2026-05-01T15:07:44-04:00] guard: elapsed=112.0s MemAvailable=65.39 GiB
+[2026-05-01T15:07:46-04:00] guard: elapsed=114.0s MemAvailable=65.31 GiB
+[2026-05-01T15:07:48-04:00] guard: elapsed=116.0s MemAvailable=65.48 GiB
+[2026-05-01T15:07:50-04:00] guard: elapsed=118.0s MemAvailable=65.53 GiB
+[2026-05-01T15:07:52-04:00] guard: elapsed=120.0s MemAvailable=65.53 GiB
+[2026-05-01T15:07:54-04:00] guard: elapsed=122.0s MemAvailable=65.60 GiB
+[2026-05-01T15:07:56-04:00] guard: elapsed=124.0s MemAvailable=65.59 GiB
+[2026-05-01T15:07:58-04:00] guard: elapsed=126.0s MemAvailable=65.61 GiB
+[2026-05-01T15:08:00-04:00] guard: elapsed=128.0s MemAvailable=65.67 GiB
+[2026-05-01T15:08:02-04:00] guard: elapsed=130.0s MemAvailable=65.48 GiB
+[2026-05-01T15:08:04-04:00] guard: elapsed=132.0s MemAvailable=65.59 GiB
+[2026-05-01T15:08:06-04:00] guard: elapsed=134.0s MemAvailable=65.65 GiB
+[2026-05-01T15:08:08-04:00] guard: elapsed=136.0s MemAvailable=65.62 GiB
+[2026-05-01T15:08:10-04:00] guard: elapsed=138.0s MemAvailable=65.71 GiB
+[2026-05-01T15:08:12-04:00] guard: elapsed=140.0s MemAvailable=65.78 GiB
+[2026-05-01T15:08:14-04:00] guard: elapsed=142.0s MemAvailable=65.44 GiB
+[2026-05-01T15:08:16-04:00] guard: elapsed=144.1s MemAvailable=65.59 GiB
+[2026-05-01T15:08:18-04:00] guard: elapsed=146.1s MemAvailable=65.61 GiB
+[2026-05-01T15:08:20-04:00] guard: elapsed=148.1s MemAvailable=65.60 GiB
+[2026-05-01T15:08:22-04:00] guard: elapsed=150.1s MemAvailable=65.69 GiB
+[2026-05-01T15:08:24-04:00] guard: elapsed=152.1s MemAvailable=65.74 GiB
+[2026-05-01T15:08:26-04:00] guard: elapsed=154.1s MemAvailable=65.36 GiB
+[2026-05-01T15:08:28-04:00] guard: elapsed=156.1s MemAvailable=65.47 GiB
+[2026-05-01T15:08:30-04:00] guard: elapsed=158.1s MemAvailable=65.29 GiB
+[2026-05-01T15:08:32-04:00] guard: elapsed=160.1s MemAvailable=65.11 GiB
+[2026-05-01T15:08:34-04:00] guard: elapsed=162.1s MemAvailable=64.94 GiB
+[2026-05-01T15:08:36-04:00] guard: elapsed=164.1s MemAvailable=64.76 GiB
+[2026-05-01T15:08:38-04:00] guard: elapsed=166.1s MemAvailable=64.59 GiB
+[2026-05-01T15:08:40-04:00] guard: elapsed=168.1s MemAvailable=64.41 GiB
+[2026-05-01T15:08:42-04:00] guard: elapsed=170.1s MemAvailable=64.21 GiB
+[2026-05-01T15:08:44-04:00] guard: elapsed=172.1s MemAvailable=64.04 GiB
+[2026-05-01T15:08:46-04:00] guard: elapsed=174.1s MemAvailable=63.84 GiB
+[2026-05-01T15:08:48-04:00] guard: elapsed=176.1s MemAvailable=63.65 GiB
+[2026-05-01T15:08:50-04:00] guard: elapsed=178.1s MemAvailable=63.44 GiB
+[2026-05-01T15:08:52-04:00] guard: elapsed=180.1s MemAvailable=63.24 GiB
+[2026-05-01T15:08:54-04:00] guard: elapsed=182.1s MemAvailable=63.02 GiB
+[2026-05-01T15:08:56-04:00] guard: elapsed=184.1s MemAvailable=62.80 GiB
+[2026-05-01T15:08:58-04:00] guard: elapsed=186.1s MemAvailable=62.62 GiB
+[2026-05-01T15:09:00-04:00] guard: elapsed=188.1s MemAvailable=62.49 GiB
+[2026-05-01T15:09:02-04:00] guard: elapsed=190.1s MemAvailable=62.33 GiB
+[2026-05-01T15:09:04-04:00] guard: elapsed=192.1s MemAvailable=62.19 GiB
+[2026-05-01T15:09:06-04:00] guard: elapsed=194.1s MemAvailable=62.05 GiB
+[2026-05-01T15:09:08-04:00] guard: elapsed=196.1s MemAvailable=61.90 GiB
+[2026-05-01T15:09:10-04:00] guard: elapsed=198.1s MemAvailable=61.74 GiB
+[2026-05-01T15:09:12-04:00] guard: elapsed=200.1s MemAvailable=61.59 GiB
+[2026-05-01T15:09:14-04:00] guard: elapsed=202.1s MemAvailable=61.43 GiB
+[2026-05-01T15:09:16-04:00] guard: elapsed=204.1s MemAvailable=61.28 GiB
+[2026-05-01T15:09:18-04:00] guard: elapsed=206.1s MemAvailable=61.13 GiB
+[2026-05-01T15:09:20-04:00] guard: elapsed=208.1s MemAvailable=60.99 GiB
+[2026-05-01T15:09:22-04:00] guard: elapsed=210.1s MemAvailable=60.85 GiB
+[2026-05-01T15:09:24-04:00] guard: elapsed=212.1s MemAvailable=60.71 GiB
+[2026-05-01T15:09:26-04:00] guard: elapsed=214.1s MemAvailable=60.55 GiB
+[2026-05-01T15:09:28-04:00] guard: elapsed=216.1s MemAvailable=60.39 GiB
+mem_initial (107984343040, 130663661568)
+max_seq_len 1048576
+load_counts {'loaded': 1559}
+mem_after_load (54670131200, 130663661568)
+prompt 'Hello'
+input_token_ids [19923]
+generated_token_ids [21133, 438]
+generated_text 'World ='
+prompt_plus_generated_text 'HelloWorld ='
+logits_shape (1, 129280) torch.float32
+mem_after_forward (42789363712, 130663661568)
+[2026-05-01T15:09:30-04:00] guard: elapsed=218.1s MemAvailable=72.56 GiB
+[2026-05-01T15:09:32-04:00] guard: elapsed=220.1s MemAvailable=76.93 GiB
+[2026-05-01T15:09:35-04:00] guard: docker exited return_code=0 reason=process exited
+[2026-05-01T15:09:35-04:00] guard: recovering NVIDIA driver memory
+[2026-05-01T15:09:35-04:00] guard: sudo -n systemctl stop nvidia-persistenced
+[2026-05-01T15:09:35-04:00] guard: sudo -n modprobe -r nvidia_uvm nvidia_drm nvidia_modeset nvidia
+[2026-05-01T15:09:36-04:00] guard: sudo -n modprobe nvidia
+[2026-05-01T15:09:39-04:00] guard: sudo -n modprobe nvidia_uvm
+[2026-05-01T15:09:39-04:00] guard: sudo -n systemctl start nvidia-persistenced
+               total        used        free      shared  buff/cache   available
+Mem:           121Gi       3.7Gi        97Gi       2.1Mi        21Gi       118Gi
+Swap:           15Gi          0B        15Gi
+Fri May  1 15:09:40 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 590.48.01              Driver Version: 590.48.01      CUDA Version: 13.1     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GB10                    On  |   0000000F:01:00.0 Off |                  N/A |
+| N/A   43C    P0             14W /  N/A  | Not Supported          |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
