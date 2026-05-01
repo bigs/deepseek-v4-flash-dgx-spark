@@ -2,7 +2,7 @@
 name = "deepseek-v4-flash-dgx-spark"
 version = "0.1.0"
 description = "DGX Spark runtime experiments and serving harness for DeepSeek-V4-Flash."
-readme = "docs/initial-research.md"
+readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.115",
