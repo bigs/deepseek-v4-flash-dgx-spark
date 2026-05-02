@@ -1,0 +1,309 @@
+{
+  "all_hit_rate": 0.0,
+  "layers": [
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 0,
+      "pairs": 8,
+      "slot_hit_rate": 0.041666666666666664
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 1,
+      "pairs": 8,
+      "slot_hit_rate": 0.041666666666666664
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 2,
+      "pairs": 8,
+      "slot_hit_rate": 0.041666666666666664
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 3,
+      "pairs": 8,
+      "slot_hit_rate": 0.5416666666666666
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 4,
+      "pairs": 8,
+      "slot_hit_rate": 0.4583333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 5,
+      "pairs": 8,
+      "slot_hit_rate": 0.3541666666666667
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 6,
+      "pairs": 8,
+      "slot_hit_rate": 0.3541666666666667
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 7,
+      "pairs": 8,
+      "slot_hit_rate": 0.4166666666666667
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 8,
+      "pairs": 8,
+      "slot_hit_rate": 0.3958333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 9,
+      "pairs": 8,
+      "slot_hit_rate": 0.4791666666666667
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 10,
+      "pairs": 8,
+      "slot_hit_rate": 0.5208333333333334
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 11,
+      "pairs": 8,
+      "slot_hit_rate": 0.6041666666666666
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 12,
+      "pairs": 8,
+      "slot_hit_rate": 0.5
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 13,
+      "pairs": 8,
+      "slot_hit_rate": 0.5625
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 14,
+      "pairs": 8,
+      "slot_hit_rate": 0.3541666666666667
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 15,
+      "pairs": 8,
+      "slot_hit_rate": 0.6666666666666666
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 16,
+      "pairs": 8,
+      "slot_hit_rate": 0.25
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 17,
+      "pairs": 8,
+      "slot_hit_rate": 0.5
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 18,
+      "pairs": 8,
+      "slot_hit_rate": 0.6041666666666666
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 19,
+      "pairs": 8,
+      "slot_hit_rate": 0.3333333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 20,
+      "pairs": 8,
+      "slot_hit_rate": 0.3333333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 21,
+      "pairs": 8,
+      "slot_hit_rate": 0.4375
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 22,
+      "pairs": 8,
+      "slot_hit_rate": 0.4791666666666667
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 23,
+      "pairs": 8,
+      "slot_hit_rate": 0.375
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 24,
+      "pairs": 8,
+      "slot_hit_rate": 0.3333333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 25,
+      "pairs": 8,
+      "slot_hit_rate": 0.4583333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 26,
+      "pairs": 8,
+      "slot_hit_rate": 0.4791666666666667
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 27,
+      "pairs": 8,
+      "slot_hit_rate": 0.3125
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 28,
+      "pairs": 8,
+      "slot_hit_rate": 0.5
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 29,
+      "pairs": 8,
+      "slot_hit_rate": 0.4166666666666667
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 30,
+      "pairs": 8,
+      "slot_hit_rate": 0.4583333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 31,
+      "pairs": 8,
+      "slot_hit_rate": 0.375
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 32,
+      "pairs": 8,
+      "slot_hit_rate": 0.4791666666666667
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 33,
+      "pairs": 8,
+      "slot_hit_rate": 0.3333333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 34,
+      "pairs": 8,
+      "slot_hit_rate": 0.3958333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 35,
+      "pairs": 8,
+      "slot_hit_rate": 0.3958333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 36,
+      "pairs": 8,
+      "slot_hit_rate": 0.2708333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 37,
+      "pairs": 8,
+      "slot_hit_rate": 0.3333333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 38,
+      "pairs": 8,
+      "slot_hit_rate": 0.4375
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 39,
+      "pairs": 8,
+      "slot_hit_rate": 0.22916666666666666
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 40,
+      "pairs": 8,
+      "slot_hit_rate": 0.3333333333333333
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 41,
+      "pairs": 8,
+      "slot_hit_rate": 0.20833333333333334
+    },
+    {
+      "all_hit_rate": 0.0,
+      "avg_k": 6.0,
+      "layer": 42,
+      "pairs": 8,
+      "slot_hit_rate": 0.2708333333333333
+    }
+  ],
+  "slot_hit_rate": 0.3875968992248062,
+  "total_pairs": 344,
+  "trace": "results/spark-66c9/route-cache1024-t8-routes.jsonl"
+}

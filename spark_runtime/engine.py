@@ -132,6 +132,7 @@ class DeepSeekSparkEngine:
                 if session.pending_postfill
             ],
             "load_counts": self.load_counts,
+            "expert_cache": _expert_cache_health(),
         }
 
     async def generate(
@@ -190,6 +191,7 @@ class DeepSeekSparkEngine:
         reasoning_effort: Literal["max", "high"] | None,
     ) -> GenerateResult:
         import torch
+        from spark_runtime.lazy_official_runtime import expert_cache_delta, expert_cache_snapshot
 
         request_id = uuid.uuid4().hex
         total_start = time.monotonic()
@@ -200,6 +202,7 @@ class DeepSeekSparkEngine:
 
         timings: dict[str, Any] = {}
         memory: dict[str, tuple[int, int]] = {"before": torch.cuda.mem_get_info()}
+        expert_cache_before = expert_cache_snapshot()
         encode_start = time.monotonic()
         with self.telemetry.nvtx("engine.encode", request_id=request_id):
             prompt_token_ids = self.encode(
@@ -335,6 +338,12 @@ class DeepSeekSparkEngine:
             else None
         )
         memory["after"] = torch.cuda.mem_get_info()
+        expert_cache_after = expert_cache_snapshot()
+        expert_cache = {
+            "before": expert_cache_before,
+            "after": expert_cache_after,
+            "delta": expert_cache_delta(expert_cache_before, expert_cache_after),
+        }
         timings["total_seconds"] = time.monotonic() - total_start
         telemetry_event = {
             "event": "engine_generate",
@@ -355,6 +364,7 @@ class DeepSeekSparkEngine:
             "deferred_postfill_scheduled": deferred_postfill_token_ids is not None,
             "timings": timings,
             "memory": memory,
+            "expert_cache": expert_cache,
         }
         self.telemetry.emit(telemetry_event)
         return GenerateResult(
@@ -543,3 +553,17 @@ def config_from_env() -> EngineConfig:
         max_seq_len=int(os.getenv("DEEPSEEK_SPARK_MAX_SEQ_LEN", "1048576")),
         postfill_mode=os.getenv("DEEPSEEK_SPARK_POSTFILL_MODE", "deferred"),
     )
+
+
+def _expert_cache_health() -> dict[str, Any]:
+    try:
+        from spark_runtime.lazy_official_runtime import expert_cache_snapshot
+
+        return expert_cache_snapshot()
+    except ModuleNotFoundError as exc:
+        if exc.name == "torch":
+            return {
+                "enabled": False,
+                "unavailable": "torch",
+            }
+        raise

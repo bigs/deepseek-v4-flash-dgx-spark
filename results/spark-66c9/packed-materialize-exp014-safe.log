@@ -1,0 +1,101 @@
+==== 2026-05-01T21:07:04-04:00 guarded docker run start ====
+command: docker run --rm --name packed-materialize-exp014-safe --runtime=nvidia --gpus all --memory 32g --memory-swap 40g -v /home/cole/models/deepseek-v4-flash/hf:/model:ro -v /home/cole/deepseek-v4-flash-dgx-spark:/repo:ro -v /home/cole/runs/deepseek-v4-flash:/runs -e PYTHONPATH=/repo:/repo/spark_runtime:/model/inference -e PYTHONDONTWRITEBYTECODE=1 --entrypoint python3 deepseek-v4-flash-spark:tilelang /repo/scripts/bench_packed_materialization.py --model-dir /model --manifest-csv /repo/results/spark-66c9/weight-manifest.csv --layer 15 --experts 207,92,156,6,71,27,145,60,11,24,172,49,45,240,28,152 --out-json /runs/packed-materialize-exp014-safe.json --repeat 1 --device cuda --method safetensor_tensors_to_device
+guard: memory=32g memory_swap=40g min_mem_available_gib=32.0 timeout_seconds=600.0
+[2026-05-01T21:07:04-04:00] guard: initial MemAvailable=118.43 GiB
+[2026-05-01T21:07:04-04:00] guard: elapsed=0.0s MemAvailable=118.43 GiB
+[2026-05-01T21:07:06-04:00] guard: elapsed=2.0s MemAvailable=117.80 GiB
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:435: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  queued_call()
+[2026-05-01T21:07:08-04:00] guard: elapsed=4.0s MemAvailable=117.53 GiB
+{
+  "device": "cuda",
+  "expert_bytes": {
+    "11": 13369344,
+    "145": 13369344,
+    "152": 13369344,
+    "156": 13369344,
+    "172": 13369344,
+    "207": 13369344,
+    "24": 13369344,
+    "240": 13369344,
+    "27": 13369344,
+    "28": 13369344,
+    "45": 13369344,
+    "49": 13369344,
+    "6": 13369344,
+    "60": 13369344,
+    "71": 13369344,
+    "92": 13369344
+  },
+  "experts": [
+    207,
+    92,
+    156,
+    6,
+    71,
+    27,
+    145,
+    60,
+    11,
+    24,
+    172,
+    49,
+    45,
+    240,
+    28,
+    152
+  ],
+  "layer": 15,
+  "method": "safetensor_tensors_to_device",
+  "packed_path": "/runs/packed-materialize-exp014-safe.packed.bin",
+  "repeat": 1,
+  "results": [
+    {
+      "bytes": 213909504,
+      "checksum": 213909600,
+      "elapsed_s": 2.3747906049975427,
+      "experts": 16,
+      "iteration": 0,
+      "method": "safetensor_tensors_to_device"
+    }
+  ],
+  "summary": {
+    "safetensor_tensors_to_device": {
+      "median_elapsed_s": 2.3747906049975427,
+      "median_mib_s": 85.90231053243158
+    }
+  }
+}
+[2026-05-01T21:07:10-04:00] guard: docker exited return_code=0 reason=process exited
+[2026-05-01T21:07:10-04:00] guard: recovering NVIDIA driver memory
+[2026-05-01T21:07:10-04:00] guard: sudo -n systemctl stop nvidia-persistenced
+[2026-05-01T21:07:10-04:00] guard: sudo -n modprobe -r nvidia_uvm nvidia_drm nvidia_modeset nvidia
+modprobe: ERROR: ../libkmod/libkmod-module.c:856 kmod_module_remove_module() could not remove 'nvidia_uvm': Device or resource busy
+[2026-05-01T21:07:11-04:00] guard: recovery command failed rc=1
+               total        used        free      shared  buff/cache   available
+Mem:           121Gi       2.7Gi        80Gi       2.0Mi        39Gi       118Gi
+Swap:           15Gi        16Mi        15Gi
+Fri May  1 21:07:15 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 590.48.01              Driver Version: 590.48.01      CUDA Version: 13.1     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GB10                    Off |   0000000F:01:00.0 Off |                  N/A |
+| N/A   39C    P0             14W /  N/A  | Not Supported          |      4%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

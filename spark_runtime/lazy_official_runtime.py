@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import sys
+import threading
+import time
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -64,23 +67,247 @@ class WeightStore:
         return row, self.tensor_for_row(row)
 
 
+@dataclass
+class ExpertCacheStats:
+    enabled: bool = False
+    max_entries: int = 0
+    entries: int = 0
+    resident_bytes: int = 0
+    hits: int = 0
+    misses: int = 0
+    inserts: int = 0
+    evictions: int = 0
+    materialize_seconds: float = 0.0
+    copied_bytes: int = 0
+    routed_calls: int = 0
+    routed_tokens: int = 0
+    routed_activations: int = 0
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "enabled": self.enabled,
+            "max_entries": self.max_entries,
+            "entries": self.entries,
+            "resident_bytes": self.resident_bytes,
+            "hits": self.hits,
+            "misses": self.misses,
+            "inserts": self.inserts,
+            "evictions": self.evictions,
+            "materialize_seconds": self.materialize_seconds,
+            "copied_bytes": self.copied_bytes,
+            "routed_calls": self.routed_calls,
+            "routed_tokens": self.routed_tokens,
+            "routed_activations": self.routed_activations,
+        }
+
+
+def _stats_delta(before: dict[str, Any], after: dict[str, Any]) -> dict[str, Any]:
+    delta: dict[str, Any] = {}
+    for key, after_value in after.items():
+        before_value = before.get(key)
+        if isinstance(after_value, bool):
+            delta[key] = after_value
+        elif isinstance(after_value, (int, float)) and isinstance(before_value, (int, float)):
+            delta[key] = after_value - before_value
+        else:
+            delta[key] = after_value
+    return delta
+
+
+class ExpertCacheManager:
+    def __init__(self, max_entries: int):
+        self.max_entries = max(0, max_entries)
+        self.enabled = self.max_entries > 0
+        trace_path = os.getenv("DEEPSEEK_SPARK_EXPERT_ROUTE_TRACE_JSONL")
+        self.route_trace_path = Path(trace_path) if trace_path else None
+        self._lock = threading.Lock()
+        self._entries: dict[tuple[int, int], LazyRoutedExpert] = {}
+        self._access_counter = 0
+        self._resident_bytes = 0
+        self.stats = ExpertCacheStats(enabled=self.enabled, max_entries=self.max_entries)
+        if self.route_trace_path is not None:
+            self.route_trace_path.parent.mkdir(parents=True, exist_ok=True)
+
+    @classmethod
+    def from_env(cls) -> "ExpertCacheManager":
+        return cls(int(os.getenv("DEEPSEEK_SPARK_EXPERT_CACHE_ENTRIES", "0")))
+
+    def snapshot(self) -> dict[str, Any]:
+        with self._lock:
+            self.stats.entries = len(self._entries)
+            self.stats.resident_bytes = self._resident_bytes
+            return self.stats.as_dict()
+
+    def touch(self, expert: "LazyRoutedExpert") -> None:
+        with self._lock:
+            self._access_counter += 1
+            expert._cache_last_used = self._access_counter
+            self.stats.hits += 1
+
+    def record_miss(self) -> None:
+        with self._lock:
+            self.stats.misses += 1
+
+    def record_materialize(self, *, seconds: float, copied_bytes: int) -> None:
+        with self._lock:
+            self.stats.materialize_seconds += seconds
+            self.stats.copied_bytes += copied_bytes
+
+    def insert(self, expert: "LazyRoutedExpert", resident_bytes: int) -> None:
+        if not self.enabled:
+            return
+        with self._lock:
+            key = expert.cache_key
+            if key in self._entries:
+                return
+            self._access_counter += 1
+            expert._cache_last_used = self._access_counter
+            expert._cache_resident_bytes = resident_bytes
+            self._entries[key] = expert
+            self._resident_bytes += resident_bytes
+            self.stats.inserts += 1
+            self._evict_locked()
+
+    def record_routing(
+        self,
+        *,
+        layer_id: int,
+        input_ids: torch.Tensor,
+        expert_indices: torch.Tensor,
+    ) -> None:
+        flat_indices = expert_indices.flatten()
+        token_count = input_ids.numel()
+        activation_count = flat_indices.numel()
+        with self._lock:
+            self.stats.routed_calls += 1
+            self.stats.routed_tokens += token_count
+            self.stats.routed_activations += activation_count
+        if self.route_trace_path is not None:
+            self._write_route_trace(
+                layer_id=layer_id,
+                input_ids=input_ids,
+                expert_indices=expert_indices,
+                flat_indices=flat_indices,
+            )
+
+    def _write_route_trace(
+        self,
+        *,
+        layer_id: int,
+        input_ids: torch.Tensor,
+        expert_indices: torch.Tensor,
+        flat_indices: torch.Tensor,
+    ) -> None:
+        ids = flat_indices.detach().cpu().tolist()
+        histogram: dict[int, int] = {}
+        for expert_id in ids:
+            histogram[int(expert_id)] = histogram.get(int(expert_id), 0) + 1
+        nested_indices = expert_indices.detach().cpu().tolist()
+        if nested_indices and not isinstance(nested_indices[0], list):
+            nested_indices = [nested_indices]
+        payload = {
+            "timestamp": time.time(),
+            "event": "expert_route",
+            "layer_id": layer_id,
+            "token_ids": [int(value) for value in input_ids.flatten().detach().cpu().tolist()],
+            "token_count": int(input_ids.numel()),
+            "activation_count": int(flat_indices.numel()),
+            "expert_indices": [
+                [int(value) for value in row]
+                for row in nested_indices
+            ],
+            "expert_histogram": {str(key): value for key, value in sorted(histogram.items())},
+        }
+        line = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        with self._lock:
+            with self.route_trace_path.open("a", encoding="utf-8") as handle:
+                handle.write(line + "\n")
+
+    def _evict_locked(self) -> None:
+        while len(self._entries) > self.max_entries:
+            _, victim = min(
+                self._entries.items(),
+                key=lambda item: item[1]._cache_last_used,
+            )
+            self._drop_locked(victim)
+
+    def evict(self, expert: "LazyRoutedExpert") -> None:
+        with self._lock:
+            self._drop_locked(expert)
+
+    def _drop_locked(self, expert: "LazyRoutedExpert") -> None:
+        key = expert.cache_key
+        if key not in self._entries:
+            return
+        self._entries.pop(key, None)
+        self._resident_bytes -= expert._cache_resident_bytes
+        expert._drop_cached()
+        self.stats.evictions += 1
+
+
+_EXPERT_CACHE_MANAGER: ExpertCacheManager | None = None
+
+
+def configure_expert_cache(max_entries: int | None = None) -> ExpertCacheManager:
+    global _EXPERT_CACHE_MANAGER
+    _EXPERT_CACHE_MANAGER = (
+        ExpertCacheManager.from_env()
+        if max_entries is None
+        else ExpertCacheManager(max_entries=max_entries)
+    )
+    return _EXPERT_CACHE_MANAGER
+
+
+def expert_cache_manager() -> ExpertCacheManager:
+    global _EXPERT_CACHE_MANAGER
+    if _EXPERT_CACHE_MANAGER is None:
+        _EXPERT_CACHE_MANAGER = ExpertCacheManager.from_env()
+    return _EXPERT_CACHE_MANAGER
+
+
+def expert_cache_snapshot() -> dict[str, Any]:
+    return expert_cache_manager().snapshot()
+
+
+def expert_cache_delta(before: dict[str, Any], after: dict[str, Any]) -> dict[str, Any]:
+    return _stats_delta(before, after)
+
+
 class LazyRoutedExpert(torch.nn.Module):
-    def __init__(self, official_model, layer_id: int, expert_id: int, args, weight_store: WeightStore):
+    def __init__(
+        self,
+        official_model,
+        layer_id: int,
+        expert_id: int,
+        args,
+        weight_store: WeightStore,
+        cache_manager: ExpertCacheManager,
+    ):
         super().__init__()
         self.official_model = official_model
         self.layer_id = layer_id
         self.expert_id = expert_id
         self.args = args
         self.weight_store = weight_store
+        self.cache_manager = cache_manager
         self._expert: torch.nn.Module | None = None
+        self._cache_last_used = 0
+        self._cache_resident_bytes = 0
 
     @property
     def prefix(self) -> str:
         return f"layers.{self.layer_id}.ffn.experts.{self.expert_id}"
 
+    @property
+    def cache_key(self) -> tuple[int, int]:
+        return self.layer_id, self.expert_id
+
     def materialize(self, device: torch.device) -> torch.nn.Module:
         if self._expert is not None:
+            self.cache_manager.touch(self)
             return self._expert
+        self.cache_manager.record_miss()
+        start = time.monotonic()
         dtype = torch.float4_e2m1fn_x2 if self.args.expert_dtype == "fp4" else None
         expert = self.official_model.Expert(
             self.args.dim,
@@ -88,6 +315,7 @@ class LazyRoutedExpert(torch.nn.Module):
             dtype=dtype,
             swiglu_limit=self.args.swiglu_limit,
         ).to(device)
+        copied_bytes = 0
         for name, param in expert.named_parameters():
             target = f"{self.prefix}.{name}"
             row, tensor = self.weight_store.tensor_for_target(target)
@@ -95,11 +323,27 @@ class LazyRoutedExpert(torch.nn.Module):
                 tensor = tensor.view(torch.float4_e2m1fn_x2)
             tensor = tensor.to(device=param.device, dtype=param.dtype)
             param.data.copy_(tensor)
+            copied_bytes += param.numel() * param.element_size()
         self._expert = expert
+        resident_bytes = sum(
+            param.numel() * param.element_size() for param in expert.parameters()
+        )
+        self.cache_manager.record_materialize(
+            seconds=time.monotonic() - start,
+            copied_bytes=copied_bytes,
+        )
+        self.cache_manager.insert(self, resident_bytes)
         return expert
 
     def evict(self) -> None:
+        if self.cache_manager.enabled:
+            self.cache_manager.evict(self)
+        else:
+            self._drop_cached()
+
+    def _drop_cached(self) -> None:
         self._expert = None
+        self._cache_resident_bytes = 0
         torch.cuda.empty_cache()
 
     def forward(self, x: torch.Tensor, weights: torch.Tensor | None = None) -> torch.Tensor:
@@ -107,11 +351,19 @@ class LazyRoutedExpert(torch.nn.Module):
         try:
             return expert(x, weights)
         finally:
-            self.evict()
+            if not self.cache_manager.enabled:
+                self.evict()
 
 
 class LazyMoE(torch.nn.Module):
-    def __init__(self, official_model, layer_id: int, args, weight_store: WeightStore):
+    def __init__(
+        self,
+        official_model,
+        layer_id: int,
+        args,
+        weight_store: WeightStore,
+        cache_manager: ExpertCacheManager,
+    ):
         super().__init__()
         world_size = dist.get_world_size() if dist.is_initialized() else 1
         rank = dist.get_rank() if dist.is_initialized() else 0
@@ -126,7 +378,7 @@ class LazyMoE(torch.nn.Module):
         self.gate = official_model.Gate(layer_id, args)
         self.experts = torch.nn.ModuleList(
             [
-                LazyRoutedExpert(official_model, layer_id, i, args, weight_store)
+                LazyRoutedExpert(official_model, layer_id, i, args, weight_store, cache_manager)
                 if self.experts_start_idx <= i < self.experts_end_idx
                 else None
                 for i in range(self.n_routed_experts)
@@ -143,6 +395,11 @@ class LazyMoE(torch.nn.Module):
         weights, indices = self.gate(x, input_ids.flatten())
         y = torch.zeros_like(x, dtype=torch.float32)
         counts = torch.bincount(indices.flatten(), minlength=self.n_routed_experts).tolist()
+        self.experts[self.experts_start_idx].cache_manager.record_routing(
+            layer_id=self.layer_id,
+            input_ids=input_ids.flatten(),
+            expert_indices=indices,
+        )
         for i in range(self.experts_start_idx, self.experts_end_idx):
             if counts[i] == 0:
                 continue
@@ -191,10 +448,14 @@ def sparse_attn_fallback(
     return out
 
 
-def patch_lazy_moe(official_model, weight_store: WeightStore):
+def patch_lazy_moe(
+    official_model,
+    weight_store: WeightStore,
+    cache_manager: ExpertCacheManager,
+) -> None:
     class BoundLazyMoE(LazyMoE):
         def __init__(self, layer_id: int, args):
-            super().__init__(official_model, layer_id, args, weight_store)
+            super().__init__(official_model, layer_id, args, weight_store, cache_manager)
 
     official_model.MoE = BoundLazyMoE
 
@@ -261,7 +522,8 @@ def build_lazy_model(
     torch.set_num_threads(8)
     official_model = import_official_model(inference_dir)
     weight_store = WeightStore(model_dir, manifest_csv)
-    patch_lazy_moe(official_model, weight_store)
+    cache_manager = configure_expert_cache()
+    patch_lazy_moe(official_model, weight_store, cache_manager)
     args = load_args(official_model, config_path, max_seq_len)
     with torch.device("cuda"):
         model = official_model.Transformer(args)

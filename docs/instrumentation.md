@@ -43,12 +43,18 @@ The engine currently emits:
 Use JSONL for every experiment, then take Nsight captures only around interesting cases:
 
 ```bash
-nsys profile \
-  --trace=cuda,nvtx,osrt \
-  --force-overwrite=true \
-  -o /runs/nsys-decode \
-  python3 /repo/scripts/probe_server_http.py --prompt Hello --max-tokens 4 --skip-chat
+python3 scripts/run_nsys_profile.py \
+  --name nsys-hello \
+  --manifest-csv /repo/results/current/weight-manifest.csv \
+  --prompt Hello \
+  --max-tokens 2 \
+  --wait-postfill-before-cached
 ```
+
+The harness runs `scripts/guarded_docker_run.py`, bind-mounts the host Nsight Systems
+installation into the runtime container, records JSONL telemetry beside the `.nsys-rep`,
+and writes a `*-stats.txt` summary with CUDA kernel, NVTX, NVTX GPU projection, and OS
+runtime reports.
 
 Once a slow or hot kernel is identified in Nsight Systems, narrow down with Nsight Compute:
 

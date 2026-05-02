@@ -1,0 +1,462 @@
+{
+  "evict": true,
+  "layers": [
+    15,
+    18,
+    39
+  ],
+  "layout": {
+    "15": {
+      "bytes": 213909504,
+      "expert_size": 13369344,
+      "experts": [
+        207,
+        92,
+        156,
+        6,
+        71,
+        27,
+        145,
+        60,
+        11,
+        24,
+        172,
+        49,
+        45,
+        240,
+        28,
+        152
+      ],
+      "offsets": {
+        "11": 106954752,
+        "145": 80216064,
+        "152": 200540160,
+        "156": 26738688,
+        "172": 133693440,
+        "207": 0,
+        "24": 120324096,
+        "240": 173801472,
+        "27": 66846720,
+        "28": 187170816,
+        "45": 160432128,
+        "49": 147062784,
+        "6": 40108032,
+        "60": 93585408,
+        "71": 53477376,
+        "92": 13369344
+      },
+      "path": "/home/cole/runs/deepseek-v4-flash/packed-layout-exp013/packed-expert-layout/layer_15.bin"
+    },
+    "18": {
+      "bytes": 213909504,
+      "expert_size": 13369344,
+      "experts": [
+        137,
+        50,
+        5,
+        4,
+        69,
+        197,
+        183,
+        127,
+        177,
+        83,
+        186,
+        152,
+        74,
+        193,
+        103,
+        109
+      ],
+      "offsets": {
+        "103": 187170816,
+        "109": 200540160,
+        "127": 93585408,
+        "137": 0,
+        "152": 147062784,
+        "177": 106954752,
+        "183": 80216064,
+        "186": 133693440,
+        "193": 173801472,
+        "197": 66846720,
+        "4": 40108032,
+        "5": 26738688,
+        "50": 13369344,
+        "69": 53477376,
+        "74": 160432128,
+        "83": 120324096
+      },
+      "path": "/home/cole/runs/deepseek-v4-flash/packed-layout-exp013/packed-expert-layout/layer_18.bin"
+    },
+    "39": {
+      "bytes": 213909504,
+      "expert_size": 13369344,
+      "experts": [
+        183,
+        63,
+        58,
+        231,
+        243,
+        30,
+        127,
+        210,
+        29,
+        35,
+        182,
+        157,
+        64,
+        86,
+        46,
+        112
+      ],
+      "offsets": {
+        "112": 200540160,
+        "127": 80216064,
+        "157": 147062784,
+        "182": 133693440,
+        "183": 0,
+        "210": 93585408,
+        "231": 40108032,
+        "243": 53477376,
+        "29": 106954752,
+        "30": 66846720,
+        "35": 120324096,
+        "46": 187170816,
+        "58": 26738688,
+        "63": 13369344,
+        "64": 160432128,
+        "86": 173801472
+      },
+      "path": "/home/cole/runs/deepseek-v4-flash/packed-layout-exp013/packed-expert-layout/layer_39.bin"
+    }
+  },
+  "results": [
+    {
+      "median_elapsed_s": 0.06710942000063369,
+      "median_throughput_gib_s": 2.9685661118531326,
+      "name": "layer15.hf_exact",
+      "ranges": 96,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213932178,
+          "elapsed_s": 0.06710942000063369,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213932178,
+          "elapsed_s": 0.0668597090007097,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213932178,
+          "elapsed_s": 0.14538709000044037,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.12253577600131393,
+      "median_throughput_gib_s": 1.6258006967521372,
+      "name": "layer15.hf_coalesced",
+      "ranges": 26,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213915806,
+          "elapsed_s": 0.16962742400210118,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 35749
+        },
+        {
+          "checksum": 213915806,
+          "elapsed_s": 0.11922945100013749,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 12256
+        },
+        {
+          "checksum": 213915806,
+          "elapsed_s": 0.12253577600131393,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 12256
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.0666399330002605,
+      "median_throughput_gib_s": 2.989480046434339,
+      "name": "layer15.packed",
+      "ranges": 16,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213913034,
+          "elapsed_s": 0.07350672699976712,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 6496
+        },
+        {
+          "checksum": 213913034,
+          "elapsed_s": 0.0666399330002605,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213913034,
+          "elapsed_s": 0.06390117500268389,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.15355315799752134,
+      "median_throughput_gib_s": 1.2973927244349857,
+      "name": "layer18.hf_exact",
+      "ranges": 96,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213932732,
+          "elapsed_s": 0.14951462799945148,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213932732,
+          "elapsed_s": 0.15355315799752134,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213932732,
+          "elapsed_s": 0.1573479610015056,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.10291761900225538,
+      "median_throughput_gib_s": 1.9357108329102934,
+      "name": "layer18.hf_coalesced",
+      "ranges": 30,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213916433,
+          "elapsed_s": 0.10647408600198105,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 2689
+        },
+        {
+          "checksum": 213916433,
+          "elapsed_s": 0.10291761900225538,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213916433,
+          "elapsed_s": 0.09906601599868736,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.06586868800150114,
+      "median_throughput_gib_s": 3.0244833477700332,
+      "name": "layer18.packed",
+      "ranges": 16,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213913421,
+          "elapsed_s": 0.062346075999812456,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213913421,
+          "elapsed_s": 0.06734681099987938,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213913421,
+          "elapsed_s": 0.06586868800150114,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.13535022799987928,
+      "median_throughput_gib_s": 1.4718759838378528,
+      "name": "layer39.hf_exact",
+      "ranges": 96,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213932534,
+          "elapsed_s": 0.12199621000036132,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213932534,
+          "elapsed_s": 0.13535022799987928,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213932534,
+          "elapsed_s": 0.13939365500118583,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.13088321900067967,
+      "median_throughput_gib_s": 1.5221107145826347,
+      "name": "layer39.hf_coalesced",
+      "ranges": 28,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213916184,
+          "elapsed_s": 0.11488288900000043,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 3072
+        },
+        {
+          "checksum": 213916184,
+          "elapsed_s": 0.13204219099861803,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 12256
+        },
+        {
+          "checksum": 213916184,
+          "elapsed_s": 0.13088321900067967,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 12256
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.06506515500223031,
+      "median_throughput_gib_s": 3.061834710040592,
+      "name": "layer39.packed",
+      "ranges": 16,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213913083,
+          "elapsed_s": 0.06991505800033337,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 6496
+        },
+        {
+          "checksum": 213913083,
+          "elapsed_s": 0.0632973050014698,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213913083,
+          "elapsed_s": 0.06506515500223031,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    }
+  ],
+  "selections": {
+    "15": [
+      207,
+      92,
+      156,
+      6,
+      71,
+      27,
+      145,
+      60,
+      11,
+      24,
+      172,
+      49,
+      45,
+      240,
+      28,
+      152
+    ],
+    "18": [
+      137,
+      50,
+      5,
+      4,
+      69,
+      197,
+      183,
+      127,
+      177,
+      83,
+      186,
+      152,
+      74,
+      193,
+      103,
+      109
+    ],
+    "39": [
+      183,
+      63,
+      58,
+      231,
+      243,
+      30,
+      127,
+      210,
+      29,
+      35,
+      182,
+      157,
+      64,
+      86,
+      46,
+      112
+    ]
+  },
+  "top_per_layer": 16
+}

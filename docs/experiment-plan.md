@@ -149,27 +149,36 @@ cat /proc/meminfo
 dmesg -T | tail -200
 ```
 
-## Phase 4: Streaming Design Spike
+## Phase 4: Streaming / Packed-Expert Design Spike
 
 If stock engines cannot load the model, build a minimal prototype around the
 official architecture:
 
 1. Parse safetensor metadata and map tensor names to layer/expert ownership.
 2. Identify the exact expert tensor layout and FP4 packing.
-3. Build a read-only mmap-backed expert tensor cache.
-4. Keep dense weights resident if possible.
-5. Route one layer at a time and fetch only top-k expert weights.
-6. Add prefetch once router decisions for the next layer/token are visible.
-7. Measure whether IO, FP4 decode, tensor-core compute, or Python overhead is the
-   dominant bottleneck.
+3. Keep dense weights resident if possible.
+4. Route one layer at a time and fetch only top-k expert weights.
+5. Build a packed per-layer expert format with fixed offsets.
+6. Compare safetensor tensor fetches against large aligned `pread` calls.
+7. Add a small persistent I/O thread pool only after the single-read layout wins
+   a microbenchmark.
+8. Measure whether IO, host-to-device movement, FP4 decode, tensor-core compute,
+   or Python overhead is the dominant bottleneck.
 
 The first prototype can be ugly if it proves the core residency model. Production
 quality only matters after correctness and rough throughput are measurable.
 
+This ordering is based on the Flash-MoE result: fixed-layout expert blobs and plain
+parallel `pread` were robust wins, while `mmap`, prediction, compression, and custom
+caches were often neutral or negative until the basic data path was already clean.
+
 ## Phase 4.5: Custom Kernel Track
 
 Start this track as soon as metadata inspection identifies the expert tensor
-layout. It does not need to wait for every stock-engine test to fail.
+layout, but keep it microbenchmark-oriented until the expert movement path is
+under control. It does not need to wait for every stock-engine test to fail, but
+it should not displace the cache and packed-layout work while Nsight shows memcpy
+dominating wall time.
 
 Candidate kernels/components:
 
@@ -191,13 +200,21 @@ or makes a previously impossible memory layout possible.
 Optimization order:
 
 1. Avoid format expansion.
-2. Improve on-disk layout for expert-local reads.
-3. Pin or prefetch hot experts.
-4. Replace framework fallbacks with custom kernels when they block GB10 support
+2. Stop repeated host-to-device materialization of the same routed experts.
+3. Improve on-disk layout for expert-local reads.
+4. Replace safetensor hot-path reads with fixed-offset packed expert reads.
+5. Use aligned/pinned host staging and fewer, larger HtoD transfers.
+6. Pin or cache hot experts only when telemetry shows reuse is worth the memory.
+7. Replace framework fallbacks with custom kernels when they block GB10 support
    or waste memory bandwidth.
-5. Tune expert cache size against resident KV cache and context length.
-6. Batch prompts only after single-sequence decode works.
-7. Revisit CUDA Graphs / compiled execution after the IO and kernel paths are stable.
+8. Tune expert cache size against resident KV cache, Linux page cache, and context
+   length.
+9. Batch prompts only after single-sequence decode works.
+10. Revisit CUDA Graphs / compiled execution after the IO and kernel paths are stable.
+
+Prediction, speculative prefetch, and compression are explicitly later work. Flash-MoE
+shows they can lose end-to-end by wasting SSD, memory-controller, or CPU bandwidth when
+the prediction is imperfect or decompression is not free.
 
 ## First Concrete Milestones
 
@@ -208,10 +225,11 @@ Optimization order:
 - `M3`: official inference conversion tested with `MP=1`.
 - `M4`: memory/IO baseline captured on Spark.
 - `M5`: minimal expert metadata map created.
-- `M6`: first custom GB10 microbenchmark for native FP4/FP8 expert work.
+- `M6`: first packed expert layout microbenchmark.
 - `M7`: first correct short generation, regardless of speed. Completed in
   `docs/experiments/004-lazy-runtime-first-tokens.md`.
 - `M8`: first measured tokens/sec with native FP4/FP8 and no sustained swap.
+- `M9`: first custom GB10 microbenchmark for native FP4/FP8 expert work.
 
 ## Current Custom-Runtime Direction
 
@@ -231,6 +249,102 @@ The routed expert payload must not be permanently resident. The next runtime
 prototype should load dense weights normally, replace routed experts with a lazy
 top-k expert loader, and start with slow correctness-first kernels before
 optimizing.
+
+## Current Optimization Backlog
+
+The Nsight Systems profile in `docs/experiments/010-nsight-systems-profile.md`
+changes the near-term order. The current runtime is movement-bound: it spent
+92.716s in CUDA memcpy versus 0.355s in CUDA kernels for the profiled request.
+Flash-MoE reinforces that the first wins should come from a cleaner weight path,
+not from speculative routing or math-kernel heroics.
+
+### 011: Routed Expert Cache
+
+Add a budgeted cache for materialized routed experts.
+
+Measure:
+
+- expert cache hit/miss/eviction counts;
+- resident expert bytes;
+- HtoD volume and time under Nsight;
+- decode wall time;
+- host `MemAvailable`;
+- CUDA allocation count.
+
+The first implementation can be conservative: keep `LazyRoutedExpert` modules alive
+across calls up to a byte/expert budget instead of evicting immediately after every
+forward.
+
+### 012: Expert Reuse / Frequency Telemetry
+
+Record routed expert IDs by layer and token.
+
+Analyze:
+
+- unique experts per layer;
+- top-N coverage per layer;
+- reuse distance;
+- cache size needed for 50%, 80%, and 90% hit rates;
+- whether reuse differs between prefill and decode.
+
+This determines whether a GPU-resident expert cache is a real Spark win or whether it
+steals too much memory from KV and Linux page cache.
+
+### 013: Packed Expert Layout Microbench
+
+Build a DeepSeek-specific packed expert format for a small layer subset.
+
+Compare:
+
+- current safetensors tensor fetch + `.to(cuda)`;
+- fixed-offset `pread`;
+- `mmap`;
+- aligned destination buffers;
+- pinned host staging;
+- one large HtoD copy per expert versus current tensor-by-tensor copies.
+
+Flash-MoE's result says the default bet should be fixed-offset `pread`, not `mmap`.
+Spark still needs its own measurement because Linux, CUDA, and GB10 unified memory
+will not behave exactly like Apple Silicon.
+
+### 014: Packed Expert Runtime Path
+
+Use the packed format for routed experts in the runtime while preserving correctness
+against the current official-module path.
+
+The first version may still call PyTorch kernels after loading. The goal is to remove
+hot-path safetensor lookup, reduce copy fragmentation, and make expert I/O visible as
+large deterministic operations.
+
+### 015: Deterministic Pipeline Overlap
+
+After packed reads exist, overlap deterministic work before attempting prediction:
+
+- issue routed expert reads through a persistent I/O pool;
+- pre-stage shared expert / dense work while reads are in flight;
+- avoid creating or destroying Python/PyTorch objects per expert call;
+- reduce synchronization points between load, route, copy, and compute.
+
+### 016: Custom Native Expert Kernel
+
+Prototype the first custom routed expert path once movement is under control:
+
+- consume native FP4/FP8 packed expert blocks;
+- keep activations resident;
+- fuse dequant, matmul, activation, and combine where practical;
+- use the FMA-style dequant rearrangement from Flash-MoE where it maps cleanly to
+  CUDA.
+
+This is deliberately after the movement work. The current measured bottleneck is not
+CUDA kernel math yet.
+
+### 017: Prediction / Compression Experiments
+
+Revisit prediction, speculative prefetch, and compressed experts only after the
+deterministic packed path is measured.
+
+Success criteria should be strict: these features must improve end-to-end tokens/sec
+and not just isolated read throughput.
 
 ## Serving Direction
 

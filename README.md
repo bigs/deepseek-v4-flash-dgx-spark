@@ -63,6 +63,7 @@ Start with:
 - `docs/experiment-plan.md`
 - `docs/serving-design.md`
 - `docs/instrumentation.md`
+- `docs/optimization-report.md`
 - `spark_runtime/README.md`
 
 ## Local Development
@@ -216,9 +217,13 @@ machine labels from the original run environment.
 
 Near-term optimization work:
 
-- capture Nsight Systems timelines around prefill/decode using the NVTX ranges
-- profile the slow decode-forward kernels with Nsight Compute
+- add a budgeted routed-expert cache and measure HtoD reduction with Nsight
+- record expert reuse/frequency telemetry to size that cache scientifically
+- build a packed per-layer expert layout and compare safetensors vs fixed-offset
+  `pread`
+- move the runtime onto packed expert reads before writing custom kernels
+- prototype native FP4/FP8 expert kernels after weight movement is under control
 - replace sparse attention fallback with a GB10-compatible kernel
-- measure routed expert read patterns and build a real expert cache/prefetch policy
+- revisit expert prefetch only after deterministic packed reads are measured
 - add stronger OpenAI-compatible request validation, cancellation, and queue controls
 - expose service metrics once the runtime path stabilizes

@@ -1,0 +1,462 @@
+{
+  "evict": false,
+  "layers": [
+    15,
+    18,
+    39
+  ],
+  "layout": {
+    "15": {
+      "bytes": 213909504,
+      "expert_size": 13369344,
+      "experts": [
+        207,
+        92,
+        156,
+        6,
+        71,
+        27,
+        145,
+        60,
+        11,
+        24,
+        172,
+        49,
+        45,
+        240,
+        28,
+        152
+      ],
+      "offsets": {
+        "11": 106954752,
+        "145": 80216064,
+        "152": 200540160,
+        "156": 26738688,
+        "172": 133693440,
+        "207": 0,
+        "24": 120324096,
+        "240": 173801472,
+        "27": 66846720,
+        "28": 187170816,
+        "45": 160432128,
+        "49": 147062784,
+        "6": 40108032,
+        "60": 93585408,
+        "71": 53477376,
+        "92": 13369344
+      },
+      "path": "/home/cole/runs/deepseek-v4-flash/packed-layout-exp013-warm/packed-expert-layout/layer_15.bin"
+    },
+    "18": {
+      "bytes": 213909504,
+      "expert_size": 13369344,
+      "experts": [
+        137,
+        50,
+        5,
+        4,
+        69,
+        197,
+        183,
+        127,
+        177,
+        83,
+        186,
+        152,
+        74,
+        193,
+        103,
+        109
+      ],
+      "offsets": {
+        "103": 187170816,
+        "109": 200540160,
+        "127": 93585408,
+        "137": 0,
+        "152": 147062784,
+        "177": 106954752,
+        "183": 80216064,
+        "186": 133693440,
+        "193": 173801472,
+        "197": 66846720,
+        "4": 40108032,
+        "5": 26738688,
+        "50": 13369344,
+        "69": 53477376,
+        "74": 160432128,
+        "83": 120324096
+      },
+      "path": "/home/cole/runs/deepseek-v4-flash/packed-layout-exp013-warm/packed-expert-layout/layer_18.bin"
+    },
+    "39": {
+      "bytes": 213909504,
+      "expert_size": 13369344,
+      "experts": [
+        183,
+        63,
+        58,
+        231,
+        243,
+        30,
+        127,
+        210,
+        29,
+        35,
+        182,
+        157,
+        64,
+        86,
+        46,
+        112
+      ],
+      "offsets": {
+        "112": 200540160,
+        "127": 80216064,
+        "157": 147062784,
+        "182": 133693440,
+        "183": 0,
+        "210": 93585408,
+        "231": 40108032,
+        "243": 53477376,
+        "29": 106954752,
+        "30": 66846720,
+        "35": 120324096,
+        "46": 187170816,
+        "58": 26738688,
+        "63": 13369344,
+        "64": 160432128,
+        "86": 173801472
+      },
+      "path": "/home/cole/runs/deepseek-v4-flash/packed-layout-exp013-warm/packed-expert-layout/layer_39.bin"
+    }
+  },
+  "results": [
+    {
+      "median_elapsed_s": 0.01606348199857166,
+      "median_throughput_gib_s": 12.401965527630573,
+      "name": "layer15.hf_exact",
+      "ranges": 96,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213932178,
+          "elapsed_s": 0.018382000998826697,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 1
+        },
+        {
+          "checksum": 213932178,
+          "elapsed_s": 0.01606348199857166,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213932178,
+          "elapsed_s": 0.015930169000057504,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.05050024400043185,
+      "median_throughput_gib_s": 3.9449066820013066,
+      "name": "layer15.hf_coalesced",
+      "ranges": 26,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213915806,
+          "elapsed_s": 0.10867151800266583,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 35749
+        },
+        {
+          "checksum": 213915806,
+          "elapsed_s": 0.05009093300031964,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 12256
+        },
+        {
+          "checksum": 213915806,
+          "elapsed_s": 0.05050024400043185,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 12256
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.014593710999179166,
+      "median_throughput_gib_s": 13.651000078815128,
+      "name": "layer15.packed",
+      "ranges": 16,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213913034,
+          "elapsed_s": 0.027329442997142905,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 6497
+        },
+        {
+          "checksum": 213913034,
+          "elapsed_s": 0.014593710999179166,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213913034,
+          "elapsed_s": 0.014462189999903785,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.015704458000982413,
+      "median_throughput_gib_s": 12.685490323036785,
+      "name": "layer18.hf_exact",
+      "ranges": 96,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213932732,
+          "elapsed_s": 0.017799812001612736,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213932732,
+          "elapsed_s": 0.015704458000982413,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213932732,
+          "elapsed_s": 0.015228219999698922,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.01697850199707318,
+      "median_throughput_gib_s": 11.733588159564494,
+      "name": "layer18.hf_coalesced",
+      "ranges": 30,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213916433,
+          "elapsed_s": 0.021831718000612454,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 2688
+        },
+        {
+          "checksum": 213916433,
+          "elapsed_s": 0.01697850199707318,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213916433,
+          "elapsed_s": 0.016956661998847267,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.01464318199941772,
+      "median_throughput_gib_s": 13.604881098105716,
+      "name": "layer18.packed",
+      "ranges": 16,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213913421,
+          "elapsed_s": 0.014862349002214614,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213913421,
+          "elapsed_s": 0.01447057499899529,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213913421,
+          "elapsed_s": 0.01464318199941772,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.016711526997823967,
+      "median_throughput_gib_s": 11.921038096993804,
+      "name": "layer39.hf_exact",
+      "ranges": 96,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213932534,
+          "elapsed_s": 0.019055551001656568,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213932534,
+          "elapsed_s": 0.016711526997823967,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213932534,
+          "elapsed_s": 0.01613887300118222,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.050461060000088764,
+      "median_throughput_gib_s": 3.947969979220602,
+      "name": "layer39.hf_coalesced",
+      "ranges": 28,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213916184,
+          "elapsed_s": 0.03271798499918077,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 3072
+        },
+        {
+          "checksum": 213916184,
+          "elapsed_s": 0.050461060000088764,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 12256
+        },
+        {
+          "checksum": 213916184,
+          "elapsed_s": 0.05078486599813914,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 12256
+        }
+      ]
+    },
+    {
+      "median_elapsed_s": 0.014592334002372809,
+      "median_throughput_gib_s": 13.652288247212937,
+      "name": "layer39.packed",
+      "ranges": 16,
+      "read_bytes": 213909504,
+      "samples": [
+        {
+          "checksum": 213913083,
+          "elapsed_s": 0.02711430799899972,
+          "iteration": 0,
+          "major_faults": 0,
+          "minor_faults": 6496
+        },
+        {
+          "checksum": 213913083,
+          "elapsed_s": 0.014592334002372809,
+          "iteration": 1,
+          "major_faults": 0,
+          "minor_faults": 0
+        },
+        {
+          "checksum": 213913083,
+          "elapsed_s": 0.014540095002303133,
+          "iteration": 2,
+          "major_faults": 0,
+          "minor_faults": 0
+        }
+      ]
+    }
+  ],
+  "selections": {
+    "15": [
+      207,
+      92,
+      156,
+      6,
+      71,
+      27,
+      145,
+      60,
+      11,
+      24,
+      172,
+      49,
+      45,
+      240,
+      28,
+      152
+    ],
+    "18": [
+      137,
+      50,
+      5,
+      4,
+      69,
+      197,
+      183,
+      127,
+      177,
+      83,
+      186,
+      152,
+      74,
+      193,
+      103,
+      109
+    ],
+    "39": [
+      183,
+      63,
+      58,
+      231,
+      243,
+      30,
+      127,
+      210,
+      29,
+      35,
+      182,
+      157,
+      64,
+      86,
+      46,
+      112
+    ]
+  },
+  "top_per_layer": 16
+}
