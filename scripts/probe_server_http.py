@@ -19,8 +19,12 @@ def request_json(method: str, url: str, payload: dict | None = None, timeout: fl
     req = urllib.request.Request(url, data=data, method=method)
     if payload is not None:
         req.add_header("content-type", "application/json")
-    with urllib.request.urlopen(req, timeout=timeout) as response:
-        return json.loads(response.read().decode())
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            return json.loads(response.read().decode())
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode(errors="replace")
+        raise RuntimeError(f"HTTP {exc.code} {exc.reason}: {body}") from exc
 
 
 def wait_ready(base_url: str, timeout_seconds: float) -> None:

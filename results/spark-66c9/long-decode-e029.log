@@ -1,0 +1,162 @@
+==== 2026-05-02T00:59:54-04:00 guarded docker run start ====
+command: docker run --rm --name long-decode-e029 --runtime=nvidia --gpus all --memory 112g --memory-swap 120g -v /home/cole/deepseek-v4-flash-dgx-spark:/repo:ro -v /home/cole/models/deepseek-v4-flash/hf:/model:ro -v /home/cole/runs/deepseek-v4-flash:/runs -e PYTHONPATH=/repo -e DEEPSEEK_SPARK_MODEL_DIR=/model -e DEEPSEEK_SPARK_MANIFEST_CSV=/repo/results/spark-66c9/weight-manifest.csv -e DEEPSEEK_SPARK_TELEMETRY_JSONL=/runs/long-decode-e029.jsonl -e DEEPSEEK_SPARK_POSTFILL_MODE=deferred -e DEEPSEEK_SPARK_EXPERT_CACHE_ENTRIES=1024 -e DEEPSEEK_SPARK_EXPERT_CACHE_POLICY=layer_lru -e DEEPSEEK_SPARK_EXPERT_CACHE_LAYER_COUNT=43 -e DEEPSEEK_SPARK_PACKED_EXPERT_LAYOUT=/runs/packed-full-e018/layout.json --entrypoint /bin/bash deepseek-v4-flash-spark:tilelang -lc 'cd /repo && python3 /repo/scripts/probe_server_http.py --prompt Hello --max-tokens 32 --skip-chat'
+guard: memory=112g memory_swap=120g min_mem_available_gib=12.0 timeout_seconds=3600.0
+[2026-05-02T00:59:54-04:00] guard: initial MemAvailable=118.37 GiB
+[2026-05-02T00:59:54-04:00] guard: elapsed=0.0s MemAvailable=118.37 GiB
+[2026-05-02T00:59:56-04:00] guard: elapsed=2.0s MemAvailable=118.29 GiB
+[2026-05-02T00:59:58-04:00] guard: elapsed=4.0s MemAvailable=118.03 GiB
+[2026-05-02T01:00:00-04:00] guard: elapsed=6.0s MemAvailable=118.00 GiB
+[2026-05-02T01:00:02-04:00] guard: elapsed=8.0s MemAvailable=117.98 GiB
+[2026-05-02T01:00:04-04:00] guard: elapsed=10.0s MemAvailable=117.94 GiB
+INFO:     Started server process [45]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18080 (Press CTRL+C to quit)
+INFO:     127.0.0.1:46846 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46858 - "GET /v1/models HTTP/1.1" 200 OK
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:435: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  queued_call()
+/repo/spark_runtime/lazy_official_runtime.py:730: FutureWarning: torch.cuda._set_allocator_settings is deprecated. Use torch._C._accelerator_setAllocatorSettings instead.
+  torch.cuda.memory._set_allocator_settings("expandable_segments:True")
+[2026-05-02T01:00:06-04:00] guard: elapsed=12.0s MemAvailable=117.64 GiB
+[2026-05-02T01:00:08-04:00] guard: elapsed=14.0s MemAvailable=111.90 GiB
+[2026-05-02T01:00:10-04:00] guard: elapsed=16.0s MemAvailable=80.29 GiB
+[2026-05-02T01:00:12-04:00] guard: elapsed=18.0s MemAvailable=76.69 GiB
+[2026-05-02T01:00:14-04:00] guard: elapsed=20.0s MemAvailable=76.43 GiB
+[2026-05-02T01:00:16-04:00] guard: elapsed=22.0s MemAvailable=76.16 GiB
+[2026-05-02T01:00:18-04:00] guard: elapsed=24.0s MemAvailable=75.78 GiB
+[2026-05-02T01:00:20-04:00] guard: elapsed=26.0s MemAvailable=75.31 GiB
+[2026-05-02T01:00:22-04:00] guard: elapsed=28.0s MemAvailable=75.08 GiB
+[2026-05-02T01:00:24-04:00] guard: elapsed=30.0s MemAvailable=74.70 GiB
+[2026-05-02T01:00:26-04:00] guard: elapsed=32.0s MemAvailable=74.58 GiB
+[2026-05-02T01:00:28-04:00] guard: elapsed=34.0s MemAvailable=74.43 GiB
+[2026-05-02T01:00:30-04:00] guard: elapsed=36.0s MemAvailable=74.24 GiB
+[2026-05-02T01:00:32-04:00] guard: elapsed=38.0s MemAvailable=74.03 GiB
+[2026-05-02T01:00:34-04:00] guard: elapsed=40.0s MemAvailable=73.84 GiB
+[2026-05-02T01:00:36-04:00] guard: elapsed=42.0s MemAvailable=73.65 GiB
+[2026-05-02T01:00:38-04:00] guard: elapsed=44.0s MemAvailable=73.44 GiB
+[2026-05-02T01:00:40-04:00] guard: elapsed=46.0s MemAvailable=73.23 GiB
+[2026-05-02T01:00:42-04:00] guard: elapsed=48.0s MemAvailable=72.99 GiB
+[2026-05-02T01:00:44-04:00] guard: elapsed=50.0s MemAvailable=72.49 GiB
+[2026-05-02T01:00:46-04:00] guard: elapsed=52.0s MemAvailable=72.27 GiB
+[2026-05-02T01:00:48-04:00] guard: elapsed=54.0s MemAvailable=72.02 GiB
+[2026-05-02T01:00:50-04:00] guard: elapsed=56.0s MemAvailable=71.77 GiB
+[2026-05-02T01:00:52-04:00] guard: elapsed=58.0s MemAvailable=71.78 GiB
+[2026-05-02T01:00:54-04:00] guard: elapsed=60.0s MemAvailable=71.53 GiB
+[2026-05-02T01:00:56-04:00] guard: elapsed=62.0s MemAvailable=71.29 GiB
+[2026-05-02T01:00:58-04:00] guard: elapsed=64.0s MemAvailable=68.09 GiB
+[2026-05-02T01:01:00-04:00] guard: elapsed=66.0s MemAvailable=67.68 GiB
+[2026-05-02T01:01:02-04:00] guard: elapsed=68.0s MemAvailable=67.64 GiB
+[2026-05-02T01:01:04-04:00] guard: elapsed=70.0s MemAvailable=67.47 GiB
+[2026-05-02T01:01:06-04:00] guard: elapsed=72.0s MemAvailable=67.10 GiB
+[2026-05-02T01:01:08-04:00] guard: elapsed=74.0s MemAvailable=67.03 GiB
+[2026-05-02T01:01:10-04:00] guard: elapsed=76.0s MemAvailable=66.56 GiB
+[2026-05-02T01:01:12-04:00] guard: elapsed=78.0s MemAvailable=66.57 GiB
+[2026-05-02T01:01:14-04:00] guard: elapsed=80.0s MemAvailable=66.59 GiB
+[2026-05-02T01:01:16-04:00] guard: elapsed=82.0s MemAvailable=66.26 GiB
+[2026-05-02T01:01:18-04:00] guard: elapsed=84.0s MemAvailable=66.43 GiB
+[2026-05-02T01:01:20-04:00] guard: elapsed=86.0s MemAvailable=66.43 GiB
+[2026-05-02T01:01:22-04:00] guard: elapsed=88.0s MemAvailable=66.45 GiB
+[2026-05-02T01:01:24-04:00] guard: elapsed=90.0s MemAvailable=66.49 GiB
+[2026-05-02T01:01:26-04:00] guard: elapsed=92.0s MemAvailable=66.52 GiB
+[2026-05-02T01:01:28-04:00] guard: elapsed=94.0s MemAvailable=66.50 GiB
+[2026-05-02T01:01:30-04:00] guard: elapsed=96.0s MemAvailable=66.55 GiB
+[2026-05-02T01:01:32-04:00] guard: elapsed=98.0s MemAvailable=66.18 GiB
+[2026-05-02T01:01:34-04:00] guard: elapsed=100.0s MemAvailable=66.13 GiB
+[2026-05-02T01:01:36-04:00] guard: elapsed=102.0s MemAvailable=66.11 GiB
+[2026-05-02T01:01:38-04:00] guard: elapsed=104.0s MemAvailable=66.11 GiB
+[2026-05-02T01:01:40-04:00] guard: elapsed=106.0s MemAvailable=66.07 GiB
+[2026-05-02T01:01:42-04:00] guard: elapsed=108.0s MemAvailable=65.90 GiB
+[2026-05-02T01:01:44-04:00] guard: elapsed=110.0s MemAvailable=65.79 GiB
+[2026-05-02T01:01:46-04:00] guard: elapsed=112.0s MemAvailable=65.83 GiB
+[2026-05-02T01:01:48-04:00] guard: elapsed=114.0s MemAvailable=65.87 GiB
+[2026-05-02T01:01:50-04:00] guard: elapsed=116.0s MemAvailable=65.89 GiB
+[2026-05-02T01:01:52-04:00] guard: elapsed=118.0s MemAvailable=65.85 GiB
+[2026-05-02T01:01:54-04:00] guard: elapsed=120.0s MemAvailable=65.53 GiB
+[2026-05-02T01:01:56-04:00] guard: elapsed=122.0s MemAvailable=65.62 GiB
+[2026-05-02T01:01:58-04:00] guard: elapsed=124.0s MemAvailable=65.67 GiB
+[2026-05-02T01:02:00-04:00] guard: elapsed=126.0s MemAvailable=65.66 GiB
+[2026-05-02T01:02:02-04:00] guard: elapsed=128.0s MemAvailable=65.72 GiB
+[2026-05-02T01:02:04-04:00] guard: elapsed=130.1s MemAvailable=65.41 GiB
+[2026-05-02T01:02:06-04:00] guard: elapsed=132.1s MemAvailable=65.42 GiB
+[2026-05-02T01:02:08-04:00] guard: elapsed=134.1s MemAvailable=65.46 GiB
+[2026-05-02T01:02:10-04:00] guard: elapsed=136.1s MemAvailable=65.20 GiB
+[2026-05-02T01:02:12-04:00] guard: elapsed=138.1s MemAvailable=65.24 GiB
+[2026-05-02T01:02:14-04:00] guard: elapsed=140.1s MemAvailable=65.35 GiB
+[2026-05-02T01:02:16-04:00] guard: elapsed=142.1s MemAvailable=65.41 GiB
+[2026-05-02T01:02:18-04:00] guard: elapsed=144.1s MemAvailable=65.34 GiB
+[2026-05-02T01:02:20-04:00] guard: elapsed=146.1s MemAvailable=65.39 GiB
+[2026-05-02T01:02:22-04:00] guard: elapsed=148.1s MemAvailable=65.39 GiB
+[2026-05-02T01:02:24-04:00] guard: elapsed=150.1s MemAvailable=65.40 GiB
+INFO:     127.0.0.1:46872 - "POST /v1/completions HTTP/1.1" 500 Internal Server Error
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [45]
+[2026-05-02T01:02:26-04:00] guard: elapsed=152.1s MemAvailable=74.17 GiB
+Traceback (most recent call last):
+  File "/repo/scripts/probe_server_http.py", line 169, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/repo/scripts/probe_server_http.py", line 96, in main
+    completion, completion_seconds = timed_request(
+                                     ^^^^^^^^^^^^^^
+  File "/repo/scripts/probe_server_http.py", line 60, in timed_request
+models {'elapsed_seconds': 0.001547837004181929, 'response': {'object': 'list', 'data': [{'id': 'deepseek-v4-flash-dgx-spark', 'object': 'model', 'created': 0, 'owned_by': 'local'}]}}
+    body = request_json(method, url, payload, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/repo/scripts/probe_server_http.py", line 22, in request_json
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 521, in open
+    response = meth(req, response)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 630, in http_response
+    response = self.parent.error(
+               ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 559, in error
+    return self._call_chain(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 639, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 500: Internal Server Error
+[2026-05-02T01:02:28-04:00] guard: docker exited return_code=1 reason=process exited
+[2026-05-02T01:02:28-04:00] guard: recovering NVIDIA driver memory
+[2026-05-02T01:02:28-04:00] guard: sudo -n systemctl stop nvidia-persistenced
+[2026-05-02T01:02:28-04:00] guard: sudo -n modprobe -r nvidia_uvm nvidia_drm nvidia_modeset nvidia
+[2026-05-02T01:02:29-04:00] guard: sudo -n modprobe nvidia
+[2026-05-02T01:02:32-04:00] guard: sudo -n modprobe nvidia_uvm
+[2026-05-02T01:02:32-04:00] guard: sudo -n systemctl start nvidia-persistenced
+               total        used        free      shared  buff/cache   available
+Mem:           121Gi       4.6Gi        62Gi       1.0Mi        56Gi       117Gi
+Swap:           15Gi        22Mi        15Gi
+Sat May  2 01:02:34 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 590.48.01              Driver Version: 590.48.01      CUDA Version: 13.1     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GB10                    On  |   0000000F:01:00.0 Off |                  N/A |
+| N/A   41C    P0             14W /  N/A  | Not Supported          |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
