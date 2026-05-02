@@ -29,6 +29,9 @@ package = true
 [tool.setuptools]
 packages = ["spark_runtime"]
 
+[tool.setuptools.package-data]
+spark_runtime = ["native/*.cpp"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"

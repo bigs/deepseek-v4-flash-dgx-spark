@@ -1,0 +1,85 @@
+{
+  "block_bytes": 13369344,
+  "block_count": 64,
+  "device": "cuda",
+  "layout_json": "/runs/packed-full-e018/layout.json",
+  "max_blocks": 64,
+  "repeat": 3,
+  "results": [
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.39676323800813407,
+      "iteration": 0,
+      "method": "current_bytes",
+      "throughput_gib_s": 2.00843960242018
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.17425221198936924,
+      "iteration": 1,
+      "method": "current_bytes",
+      "throughput_gib_s": 4.573112679043728
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.17562038499454502,
+      "iteration": 2,
+      "method": "current_bytes",
+      "throughput_gib_s": 4.5374857823296075
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.12433644199336413,
+      "iteration": 0,
+      "method": "preadv_bytearray_slab",
+      "throughput_gib_s": 6.409022063238141
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.11225770199962426,
+      "iteration": 1,
+      "method": "preadv_bytearray_slab",
+      "throughput_gib_s": 7.098622061608452
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.11228984600165859,
+      "iteration": 2,
+      "method": "preadv_bytearray_slab",
+      "throughput_gib_s": 7.0965900157012385
+    }
+  ],
+  "route_jsonl": "/repo/results/spark-66c9/route-cache1024-t8-routes.jsonl",
+  "summary": {
+    "current_bytes": {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.17562038499454502,
+      "iteration": 2,
+      "method": "current_bytes",
+      "throughput_gib_s": 4.5374857823296075
+    },
+    "preadv_bytearray_slab": {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.11228984600165859,
+      "iteration": 2,
+      "method": "preadv_bytearray_slab",
+      "throughput_gib_s": 7.0965900157012385
+    }
+  }
+}

@@ -143,6 +143,11 @@ export DEEPSEEK_SPARK_CONFIG=/model/inference/config.json
 export DEEPSEEK_SPARK_MANIFEST_CSV=/repo/results/current/weight-manifest.csv
 export DEEPSEEK_SPARK_MAX_SEQ_LEN=1048576
 export DEEPSEEK_SPARK_POSTFILL_MODE=deferred
+export DEEPSEEK_SPARK_PACKED_NATIVE_LOADER=1
+export DEEPSEEK_SPARK_PACKED_NATIVE_PINNED_STAGING=1
+export DEEPSEEK_SPARK_DIRECT_PARAM_COPY=1
+export DEEPSEEK_SPARK_PARAM_COPY_NON_BLOCKING=1
+export DEEPSEEK_SPARK_NATIVE_BUILD_DIR=/runs/torch-extensions/native-packed-loader
 
 python3 -m uvicorn spark_runtime.server:app --host 127.0.0.1 --port 18080
 ```

@@ -1,0 +1,36 @@
+==== 2026-05-02T11:09:38-04:00 guarded docker run start ====
+command: docker run --rm --name native-materializer-e039 --runtime=nvidia --gpus all --memory 64g --memory-swap 72g -v /home/cole/deepseek-v4-flash-dgx-spark:/repo:ro -v /home/cole/runs/deepseek-v4-flash:/runs -e PYTHONPATH=/repo:/repo/spark_runtime:/model/inference -e PYTHONDONTWRITEBYTECODE=1 -e DEEPSEEK_SPARK_NATIVE_BUILD_DIR=/runs/torch-extensions/native-packed-loader --entrypoint /bin/bash deepseek-v4-flash-spark:tilelang -lc 'cd /repo && python3 /repo/scripts/bench_packed_slab_materialization.py --layout-json /runs/packed-route-e018/layout.json --route-jsonl /runs/route-cache1024-t8-routes.jsonl --out-json /runs/native-materializer-e039.json --max-blocks 64 --repeat 5 --include-native'
+guard: memory=64g memory_swap=72g min_mem_available_gib=16.0 timeout_seconds=900.0
+[2026-05-02T11:09:38-04:00] guard: initial MemAvailable=118.22 GiB
+[2026-05-02T11:09:38-04:00] guard: elapsed=0.0s MemAvailable=118.22 GiB
+[2026-05-02T11:09:40-04:00] guard: elapsed=2.0s MemAvailable=117.92 GiB
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:435: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  queued_call()
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.6865830000024289, "iteration": 0, "method": "current_bytes", "throughput_gib_s": 1.160638990474831}
+[2026-05-02T11:09:42-04:00] guard: elapsed=4.0s MemAvailable=117.56 GiB
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.6491407360008452, "iteration": 1, "method": "current_bytes", "throughput_gib_s": 1.2275843369641224}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.6504415170056745, "iteration": 2, "method": "current_bytes", "throughput_gib_s": 1.2251293608508202}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.649693886996829, "iteration": 3, "method": "current_bytes", "throughput_gib_s": 1.2265391685975482}
+[2026-05-02T11:09:44-04:00] guard: elapsed=6.0s MemAvailable=117.57 GiB
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.6515074990020366, "iteration": 4, "method": "current_bytes", "throughput_gib_s": 1.2231248315953904}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.10026816200115718, "iteration": 0, "method": "preadv_bytearray_slab", "throughput_gib_s": 7.9474379912419595}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.09974694799166173, "iteration": 1, "method": "preadv_bytearray_slab", "throughput_gib_s": 7.988966239514558}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.09969518799334764, "iteration": 2, "method": "preadv_bytearray_slab", "throughput_gib_s": 7.993113971089287}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.09941875700314995, "iteration": 3, "method": "preadv_bytearray_slab", "throughput_gib_s": 8.015338594252915}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.09925210100482218, "iteration": 4, "method": "preadv_bytearray_slab", "throughput_gib_s": 8.02879729428885}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.10113265700056218, "iteration": 0, "method": "native_tensor", "throughput_gib_s": 7.879502265974979}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.09994707499572542, "iteration": 1, "method": "native_tensor", "throughput_gib_s": 7.972969694551653}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.10072558600222692, "iteration": 2, "method": "native_tensor", "throughput_gib_s": 7.911346378092872}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.10061534600390587, "iteration": 3, "method": "native_tensor", "throughput_gib_s": 7.92001450722105}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.10009093099506572, "iteration": 4, "method": "native_tensor", "throughput_gib_s": 7.961510519262573}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.09523406300286297, "iteration": 0, "method": "native_pinned_tensor", "throughput_gib_s": 8.367541768915645}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.08511415000248235, "iteration": 1, "method": "native_pinned_tensor", "throughput_gib_s": 9.362426811250058}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.08522210200317204, "iteration": 2, "method": "native_pinned_tensor", "throughput_gib_s": 9.35056729732317}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.08506048598792404, "iteration": 3, "method": "native_pinned_tensor", "throughput_gib_s": 9.368333495215765}
+{"blocks": 64, "bytes": 855638016, "checksum": 855652429, "elapsed_s": 0.08499920699978247, "iteration": 4, "method": "native_pinned_tensor", "throughput_gib_s": 9.375087464075275}
+[2026-05-02T11:09:46-04:00] guard: elapsed=8.0s MemAvailable=117.97 GiB
+[2026-05-02T11:09:48-04:00] guard: docker exited return_code=0 reason=process exited

@@ -18,6 +18,8 @@ import torch
 import torch.distributed as dist
 from safetensors.torch import safe_open
 
+from spark_runtime.native_packed_loader import load_native_packed_loader
+
 
 @dataclass(frozen=True)
 class ManifestRow:
@@ -33,7 +35,7 @@ class PackedExpertBatch:
     tensors: dict[str, torch.Tensor]
     read_seconds: float
     read_bytes: int
-    _storage: bytearray | torch.Tensor
+    _storage: bytearray | memoryview | torch.Tensor
 
 
 class PackedExpertStore:
@@ -47,8 +49,27 @@ class PackedExpertStore:
             "true",
             "yes",
         }
+        self.reuse_staging = os.getenv("DEEPSEEK_SPARK_PACKED_REUSE_STAGING", "0") in {
+            "1",
+            "true",
+            "yes",
+        }
+        self.native_loader = os.getenv("DEEPSEEK_SPARK_PACKED_NATIVE_LOADER", "0") in {
+            "1",
+            "true",
+            "yes",
+        }
+        self.native_pinned_staging = os.getenv(
+            "DEEPSEEK_SPARK_PACKED_NATIVE_PINNED_STAGING", "0"
+        ) in {
+            "1",
+            "true",
+            "yes",
+        }
+        self._native_module = load_native_packed_loader() if self.native_loader else None
         self._fds: dict[Path, int] = {}
         self._lock = threading.Lock()
+        self._thread_local = threading.local()
 
     @classmethod
     def from_env(cls) -> "PackedExpertStore | None":
@@ -100,8 +121,39 @@ class PackedExpertStore:
             _storage=storage,
         )
 
-    def _read_block(self, fd: int, size: int, offset: int) -> bytearray | torch.Tensor:
+    def _read_block(self, fd: int, size: int, offset: int) -> bytearray | memoryview | torch.Tensor:
+        if self.native_loader:
+            staging = getattr(self._thread_local, "packed_native_tensor", None)
+            if (
+                staging is None
+                or staging.numel() < size
+                or bool(getattr(self._thread_local, "packed_native_pinned", False))
+                != self.native_pinned_staging
+            ):
+                staging = torch.empty(
+                    size,
+                    dtype=torch.uint8,
+                    device="cpu",
+                    pin_memory=self.native_pinned_staging,
+                )
+                self._thread_local.packed_native_tensor = staging
+                self._thread_local.packed_native_pinned = self.native_pinned_staging
+            view = staging[:size]
+            read_bytes = self._native_module.read_into(fd, view, size, offset)
+            if read_bytes != size:
+                return view[:read_bytes]
+            return view
         if not self.pinned_staging:
+            if self.reuse_staging and hasattr(os, "preadv"):
+                slab = getattr(self._thread_local, "packed_read_slab", None)
+                if slab is None or len(slab) < size:
+                    slab = bytearray(size)
+                    self._thread_local.packed_read_slab = slab
+                view = memoryview(slab)[:size]
+                read_bytes = os.preadv(fd, [view], offset)
+                if read_bytes != size:
+                    return view[:read_bytes]
+                return view
             return bytearray(os.pread(fd, size, offset))
         staging = torch.empty(size, dtype=torch.uint8, device="cpu", pin_memory=True)
         view = memoryview(staging.numpy())
@@ -112,7 +164,7 @@ class PackedExpertStore:
 
     @staticmethod
     def _tensor_from_storage(
-        storage: bytearray | torch.Tensor,
+        storage: bytearray | memoryview | torch.Tensor,
         tensor_info: dict[str, Any],
     ) -> torch.Tensor:
         offset = int(tensor_info["offset"])
@@ -471,6 +523,18 @@ class LazyRoutedExpert(torch.nn.Module):
         self._expert: torch.nn.Module | None = None
         self._cache_last_used = 0
         self._cache_resident_bytes = 0
+        self.direct_param_copy = os.getenv("DEEPSEEK_SPARK_DIRECT_PARAM_COPY", "0") in {
+            "1",
+            "true",
+            "yes",
+        }
+        self.non_blocking_param_copy = os.getenv(
+            "DEEPSEEK_SPARK_PARAM_COPY_NON_BLOCKING", "0"
+        ) in {
+            "1",
+            "true",
+            "yes",
+        }
 
     @property
     def prefix(self) -> str:
@@ -512,8 +576,15 @@ class LazyRoutedExpert(torch.nn.Module):
                 tensor = self.weight_store.tensor_for_row(row)
             if row.transform == "reinterpret_int8_as_fp4":
                 tensor = tensor.view(torch.float4_e2m1fn_x2)
-            tensor = tensor.to(device=param.device, dtype=param.dtype)
-            param.data.copy_(tensor)
+            if self.direct_param_copy and tensor.device.type == "cpu":
+                param.data.copy_(tensor, non_blocking=self.non_blocking_param_copy)
+            else:
+                tensor = tensor.to(
+                    device=param.device,
+                    dtype=param.dtype,
+                    non_blocking=self.non_blocking_param_copy,
+                )
+                param.data.copy_(tensor)
             copied_bytes += param.numel() * param.element_size()
         self._expert = expert
         resident_bytes = sum(

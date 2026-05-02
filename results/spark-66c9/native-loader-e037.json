@@ -1,0 +1,175 @@
+{
+  "block_bytes": 13369344,
+  "block_count": 64,
+  "device": "cuda",
+  "layout_json": "/runs/packed-route-e018/layout.json",
+  "max_blocks": 64,
+  "repeat": 5,
+  "results": [
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.6866442949976772,
+      "iteration": 0,
+      "method": "current_bytes",
+      "throughput_gib_s": 1.160535383174917
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.6358339679864002,
+      "iteration": 1,
+      "method": "current_bytes",
+      "throughput_gib_s": 1.2532752890248926
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.6371335810108576,
+      "iteration": 2,
+      "method": "current_bytes",
+      "throughput_gib_s": 1.2507188818013661
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.6356718410097528,
+      "iteration": 3,
+      "method": "current_bytes",
+      "throughput_gib_s": 1.253594934666571
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.6354995050060097,
+      "iteration": 4,
+      "method": "current_bytes",
+      "throughput_gib_s": 1.2539348870027274
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.10200790299859364,
+      "iteration": 0,
+      "method": "preadv_bytearray_slab",
+      "throughput_gib_s": 7.81189473144043
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.10145180799008813,
+      "iteration": 1,
+      "method": "preadv_bytearray_slab",
+      "throughput_gib_s": 7.854714625468823
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.1019569269992644,
+      "iteration": 2,
+      "method": "preadv_bytearray_slab",
+      "throughput_gib_s": 7.815800490002502
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.10197539000364486,
+      "iteration": 3,
+      "method": "preadv_bytearray_slab",
+      "throughput_gib_s": 7.814385411730395
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.10175398299179506,
+      "iteration": 4,
+      "method": "preadv_bytearray_slab",
+      "throughput_gib_s": 7.831388772901953
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.11109914499684237,
+      "iteration": 0,
+      "method": "native_tensor",
+      "throughput_gib_s": 7.172647458471877
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.09974699599843007,
+      "iteration": 1,
+      "method": "native_tensor",
+      "throughput_gib_s": 7.988962394542109
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.09986464399844408,
+      "iteration": 2,
+      "method": "native_tensor",
+      "throughput_gib_s": 7.97955080090623
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.10038358700694516,
+      "iteration": 3,
+      "method": "native_tensor",
+      "throughput_gib_s": 7.938299713725783
+    },
+    {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.100124867996783,
+      "iteration": 4,
+      "method": "native_tensor",
+      "throughput_gib_s": 7.958811990899239
+    }
+  ],
+  "route_jsonl": "/runs/route-cache1024-t8-routes.jsonl",
+  "summary": {
+    "current_bytes": {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.6358339679864002,
+      "iteration": 1,
+      "method": "current_bytes",
+      "throughput_gib_s": 1.2532752890248926
+    },
+    "native_tensor": {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.100124867996783,
+      "iteration": 4,
+      "method": "native_tensor",
+      "throughput_gib_s": 7.958811990899239
+    },
+    "preadv_bytearray_slab": {
+      "blocks": 64,
+      "bytes": 855638016,
+      "checksum": 855652429,
+      "elapsed_s": 0.1019569269992644,
+      "iteration": 2,
+      "method": "preadv_bytearray_slab",
+      "throughput_gib_s": 7.815800490002502
+    }
+  }
+}

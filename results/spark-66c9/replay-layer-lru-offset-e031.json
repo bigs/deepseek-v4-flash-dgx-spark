@@ -1,0 +1,48 @@
+{
+  "cache_entries": 1024,
+  "cache_policy": "layer_lru",
+  "io": "serial",
+  "layer_count": 43,
+  "layer_quota": 23,
+  "layout_json": "/home/cole/runs/deepseek-v4-flash/packed-full-e018/layout.json",
+  "median": {
+    "activations": 2322,
+    "cache_entries": 973,
+    "cache_evictions": 275,
+    "cache_hits": 1074,
+    "cache_misses": 1248,
+    "checksum": 3800336720,
+    "elapsed_s": 1.3334618539956864,
+    "events": 387,
+    "iteration": 0,
+    "major_faults": 0,
+    "minor_faults": 2725,
+    "missing_layout": 0,
+    "read_blocks": 1248,
+    "read_bytes": 16684941312,
+    "throughput_gib_s": 11.6531736198059
+  },
+  "read_order": "offset",
+  "repeat": 1,
+  "route_jsonl": "results/spark-66c9/route-cache1024-t8-routes.jsonl",
+  "samples": [
+    {
+      "activations": 2322,
+      "cache_entries": 973,
+      "cache_evictions": 275,
+      "cache_hits": 1074,
+      "cache_misses": 1248,
+      "checksum": 3800336720,
+      "elapsed_s": 1.3334618539956864,
+      "events": 387,
+      "iteration": 0,
+      "major_faults": 0,
+      "minor_faults": 2725,
+      "missing_layout": 0,
+      "read_blocks": 1248,
+      "read_bytes": 16684941312,
+      "throughput_gib_s": 11.6531736198059
+    }
+  ],
+  "workers": 8
+}

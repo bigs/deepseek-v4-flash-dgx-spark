@@ -1,0 +1,25 @@
+{
+  "results": [
+    {
+      "decode_seconds": 30.306766482004605,
+      "materialize_fraction": 0.5644252191707068,
+      "materialize_seconds": 17.10590331396088,
+      "observed_tok_s": 1.0558698176857895,
+      "packed_read_fraction": 0.38033098393944814,
+      "packed_read_seconds": 11.526602316123899,
+      "request_id": "c0b0fd7351c748b7b4676205ab8185c9",
+      "required_speedup": 18.941729051252878,
+      "residual_fraction": 0.05524379688984503,
+      "residual_seconds": 1.6742608519198257,
+      "target_decode_seconds": 1.6,
+      "target_tok_s": 20.0,
+      "tok_s_if_materialize_zero": 2.424083909714684,
+      "tok_s_if_read_and_materialize_halved": 2.0011864950977007,
+      "tok_s_if_read_zero": 1.703925467176519,
+      "tok_s_if_residual_zero": 1.1176108865015615,
+      "tokens": 32
+    }
+  ],
+  "target_tok_s": 20.0,
+  "telemetry_jsonl": "results/spark-66c9/long-decode-e029c.jsonl"
+}

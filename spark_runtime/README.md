@@ -56,6 +56,12 @@ engine so the official DeepSeek V4 encoding path can render them.
 | `DEEPSEEK_SPARK_CONFIG` | `$MODEL_DIR/inference/config.json` | Official inference config. |
 | `DEEPSEEK_SPARK_MAX_SEQ_LEN` | `1048576` | Maximum context/cache length. |
 | `DEEPSEEK_SPARK_POSTFILL_MODE` | `deferred` | `deferred`, `inline`, or `off`. |
+| `DEEPSEEK_SPARK_PACKED_REUSE_STAGING` | `0` | Reuse a thread-local bytearray slab and `preadv` for packed expert reads. |
+| `DEEPSEEK_SPARK_PACKED_NATIVE_LOADER` | `0` | Compile and use the native packed expert reader. |
+| `DEEPSEEK_SPARK_PACKED_NATIVE_PINNED_STAGING` | `0` | Use reusable pinned CPU tensors with the native packed reader. |
+| `DEEPSEEK_SPARK_NATIVE_BUILD_DIR` | unset | Optional persistent build directory for the PyTorch C++ extension. |
+| `DEEPSEEK_SPARK_DIRECT_PARAM_COPY` | `0` | Copy CPU expert tensor views directly into destination parameters. |
+| `DEEPSEEK_SPARK_PARAM_COPY_NON_BLOCKING` | `0` | Request non-blocking parameter copies. Use with pinned native staging. |
 
 Telemetry variables are parsed by `TelemetryConfig.from_env()`:
 
