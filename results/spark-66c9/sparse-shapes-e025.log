@@ -1,0 +1,60 @@
+==== 2026-05-01T22:01:21-04:00 guarded docker run start ====
+command: docker run --rm --name sparse-shapes-e025 --runtime=nvidia --gpus all --memory 48g --memory-swap 56g -v /home/cole/deepseek-v4-flash-dgx-spark:/repo:ro -v /home/cole/models/deepseek-v4-flash/hf:/model:ro -v /home/cole/runs/deepseek-v4-flash:/runs -e PYTHONPATH=/repo:/repo/spark_runtime:/model/inference -e PYTHONDONTWRITEBYTECODE=1 --entrypoint /bin/bash deepseek-v4-flash-spark:tilelang -lc 'cd /repo && python3 /repo/scripts/probe_sparse_attn_shapes.py --inference-dir /model/inference --out-json /runs/sparse-shapes-e025.json --repeat 3'
+guard: memory=48g memory_swap=56g min_mem_available_gib=24.0 timeout_seconds=900.0
+[2026-05-01T22:01:21-04:00] guard: initial MemAvailable=118.34 GiB
+[2026-05-01T22:01:21-04:00] guard: elapsed=0.0s MemAvailable=118.34 GiB
+[2026-05-01T22:01:23-04:00] guard: elapsed=2.0s MemAvailable=118.02 GiB
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:435: UserWarning: 
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+    
+  queued_call()
+[2026-05-01T22:01:25-04:00] guard: elapsed=4.0s MemAvailable=117.62 GiB
+[2026-05-01T22:01:27-04:00] guard: elapsed=6.0s MemAvailable=117.56 GiB
+[2026-05-01T22:01:29-04:00] guard: elapsed=8.0s MemAvailable=117.57 GiB
+[02:01:30] /project/src/transform/thread_storage_sync.cc:841: Warning: [ThreadSync] Hoisting sync from inside if to before if. Condition depends on runtime value: thread_binding % 32 // 4 * 4 + thread_binding % 128 // 32 == 0
+[02:01:30] /project/src/transform/thread_storage_sync.cc:841: Warning: [ThreadSync] Hoisting sync from inside if to before if. Condition depends on runtime value: thread_binding % 32 // 4 * 4 + thread_binding % 128 // 32 == 0
+[02:01:31] /project/src/transform/thread_storage_sync.cc:841: Warning: [ThreadSync] Hoisting sync from inside if to before if. Condition depends on runtime value: thread_binding % 32 // 4 * 4 + thread_binding % 128 // 32 == 0
+[2026-05-01T22:01:31-04:00] guard: elapsed=10.0s MemAvailable=117.56 GiB
+[2026-05-01T22:01:33-04:00] guard: elapsed=12.0s MemAvailable=117.13 GiB
+[2026-05-01T22:01:35-04:00] guard: elapsed=14.0s MemAvailable=117.03 GiB
+[2026-05-01T22:01:37-04:00] guard: elapsed=16.0s MemAvailable=117.03 GiB
+[2026-05-01T22:01:39-04:00] guard: elapsed=18.0s MemAvailable=117.25 GiB
+[2026-05-01T22:01:41-04:00] guard: elapsed=20.0s MemAvailable=117.26 GiB
+[2026-05-01T22:01:43-04:00] guard: elapsed=22.0s MemAvailable=117.12 GiB
+{"b": 1, "d": 512, "error": "InternalError('Failed to set the allowed dynamic shared memory size to 141312')", "h": 64, "m": 1, "n": 128, "name": "decode_window128_top128", "ok": false, "topk": 128}
+{"b": 1, "d": 512, "error": "InternalError('Failed to set the allowed dynamic shared memory size to 141312')", "h": 64, "m": 1, "n": 128, "name": "decode_window128_top512", "ok": false, "topk": 512}
+{"b": 1, "d": 512, "error": "InternalError('Failed to set the allowed dynamic shared memory size to 141312')", "h": 64, "m": 8, "n": 8, "name": "prefill_m8_n8_top128", "ok": false, "topk": 128}
+{"b": 1, "d": 512, "error": "InternalError('Failed to set the allowed dynamic shared memory size to 141312')", "h": 64, "m": 16, "n": 16, "name": "prefill_m16_n16_top128", "ok": false, "topk": 128}
+[2026-05-01T22:01:45-04:00] guard: elapsed=24.0s MemAvailable=117.02 GiB
+[2026-05-01T22:01:47-04:00] guard: docker exited return_code=0 reason=process exited
+[2026-05-01T22:01:47-04:00] guard: recovering NVIDIA driver memory
+[2026-05-01T22:01:47-04:00] guard: sudo -n systemctl stop nvidia-persistenced
+[2026-05-01T22:01:47-04:00] guard: sudo -n modprobe -r nvidia_uvm nvidia_drm nvidia_modeset nvidia
+[2026-05-01T22:01:48-04:00] guard: sudo -n modprobe nvidia
+[2026-05-01T22:01:51-04:00] guard: sudo -n modprobe nvidia_uvm
+[2026-05-01T22:01:51-04:00] guard: sudo -n systemctl start nvidia-persistenced
+               total        used        free      shared  buff/cache   available
+Mem:           121Gi       3.8Gi        85Gi       1.2Mi        33Gi       117Gi
+Swap:           15Gi        22Mi        15Gi
+Fri May  1 22:01:53 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 590.48.01              Driver Version: 590.48.01      CUDA Version: 13.1     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GB10                    On  |   0000000F:01:00.0 Off |                  N/A |
+| N/A   40C    P0             14W /  N/A  | Not Supported          |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

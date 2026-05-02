@@ -1,0 +1,49 @@
+{
+  "repeat": 3,
+  "results": [
+    {
+      "b": 1,
+      "d": 512,
+      "error": "InternalError('Failed to set the allowed dynamic shared memory size to 141312')",
+      "h": 64,
+      "m": 1,
+      "n": 128,
+      "name": "decode_window128_top128",
+      "ok": false,
+      "topk": 128
+    },
+    {
+      "b": 1,
+      "d": 512,
+      "error": "InternalError('Failed to set the allowed dynamic shared memory size to 141312')",
+      "h": 64,
+      "m": 1,
+      "n": 128,
+      "name": "decode_window128_top512",
+      "ok": false,
+      "topk": 512
+    },
+    {
+      "b": 1,
+      "d": 512,
+      "error": "InternalError('Failed to set the allowed dynamic shared memory size to 141312')",
+      "h": 64,
+      "m": 8,
+      "n": 8,
+      "name": "prefill_m8_n8_top128",
+      "ok": false,
+      "topk": 128
+    },
+    {
+      "b": 1,
+      "d": 512,
+      "error": "InternalError('Failed to set the allowed dynamic shared memory size to 141312')",
+      "h": 64,
+      "m": 16,
+      "n": 16,
+      "name": "prefill_m16_n16_top128",
+      "ok": false,
+      "topk": 128
+    }
+  ]
+}

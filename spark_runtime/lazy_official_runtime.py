@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 import sys
@@ -27,6 +28,118 @@ class ManifestRow:
     source_shard: str
 
 
+@dataclass(frozen=True)
+class PackedExpertBatch:
+    tensors: dict[str, torch.Tensor]
+    read_seconds: float
+    read_bytes: int
+    _storage: bytearray | torch.Tensor
+
+
+class PackedExpertStore:
+    def __init__(self, layout_path: Path):
+        self.layout_path = layout_path
+        self.base_dir = layout_path.parent
+        self.layout = json.loads(layout_path.read_text())
+        self.layers: dict[str, Any] = self.layout.get("layers", {})
+        self.pinned_staging = os.getenv("DEEPSEEK_SPARK_PACKED_PINNED_STAGING", "0") in {
+            "1",
+            "true",
+            "yes",
+        }
+        self._fds: dict[Path, int] = {}
+        self._lock = threading.Lock()
+
+    @classmethod
+    def from_env(cls) -> "PackedExpertStore | None":
+        value = os.getenv("DEEPSEEK_SPARK_PACKED_EXPERT_LAYOUT")
+        if not value:
+            return None
+        return cls(Path(value))
+
+    def close(self) -> None:
+        with self._lock:
+            for fd in self._fds.values():
+                os.close(fd)
+            self._fds.clear()
+
+    def _fd(self, path: Path) -> int:
+        with self._lock:
+            fd = self._fds.get(path)
+            if fd is None:
+                fd = os.open(path, os.O_RDONLY)
+                self._fds[path] = fd
+            return fd
+
+    def tensors_for_expert(self, layer_id: int, expert_id: int) -> PackedExpertBatch | None:
+        layer = self.layers.get(str(layer_id))
+        if layer is None:
+            return None
+        expert = layer.get("experts", {}).get(str(expert_id))
+        if expert is None:
+            return None
+        path = Path(layer["path"])
+        if not path.is_absolute():
+            path = self.base_dir / path
+        offset = int(expert["offset"])
+        size = int(expert["bytes"])
+        fd = self._fd(path)
+        start = time.monotonic()
+        storage = self._read_block(fd, size, offset)
+        read_seconds = time.monotonic() - start
+        if len(storage) != size:
+            raise OSError(f"short packed expert read: layer={layer_id} expert={expert_id}")
+        tensors = {
+            target_name: self._tensor_from_storage(storage, tensor_info)
+            for target_name, tensor_info in expert["tensors"].items()
+        }
+        return PackedExpertBatch(
+            tensors=tensors,
+            read_seconds=read_seconds,
+            read_bytes=size,
+            _storage=storage,
+        )
+
+    def _read_block(self, fd: int, size: int, offset: int) -> bytearray | torch.Tensor:
+        if not self.pinned_staging:
+            return bytearray(os.pread(fd, size, offset))
+        staging = torch.empty(size, dtype=torch.uint8, device="cpu", pin_memory=True)
+        view = memoryview(staging.numpy())
+        read_bytes = os.preadv(fd, [view], offset)
+        if read_bytes != size:
+            return staging[:read_bytes]
+        return staging
+
+    @staticmethod
+    def _tensor_from_storage(
+        storage: bytearray | torch.Tensor,
+        tensor_info: dict[str, Any],
+    ) -> torch.Tensor:
+        offset = int(tensor_info["offset"])
+        size = int(tensor_info["bytes"])
+        dtype = _source_dtype_to_torch(tensor_info["source_dtype"])
+        shape = [int(dim) for dim in tensor_info["source_shape"]]
+        if isinstance(storage, torch.Tensor):
+            return storage[offset : offset + size].view(dtype).reshape(shape)
+        view = memoryview(storage)[offset : offset + size]
+        return torch.frombuffer(view, dtype=dtype).reshape(shape)
+
+
+def _source_dtype_to_torch(dtype_name: str) -> torch.dtype:
+    mapping = {
+        "BF16": torch.bfloat16,
+        "F32": torch.float32,
+        "F8_E8M0": torch.float8_e8m0fnu,
+        "I8": torch.int8,
+        "I32": torch.int32,
+        "I64": torch.int64,
+    }
+    try:
+        return mapping[dtype_name]
+    except KeyError as exc:
+        raise ValueError(f"unsupported packed source dtype: {dtype_name}") from exc
+
+
 class WeightStore:
     def __init__(self, model_dir: Path, manifest_csv: Path):
         self.model_dir = model_dir
@@ -46,9 +159,12 @@ class WeightStore:
                 if manifest_row.target_name:
                     self.rows_by_target[manifest_row.target_name] = manifest_row
         self._handles: dict[str, Any] = {}
+        self.packed_store = PackedExpertStore.from_env()
 
     def close(self) -> None:
         self._handles.clear()
+        if self.packed_store is not None:
+            self.packed_store.close()
 
     def _handle(self, shard: str):
         if shard not in self._handles:
@@ -66,11 +182,18 @@ class WeightStore:
         row = self.rows_by_target[target_name]
         return row, self.tensor_for_row(row)
 
+    def packed_tensors_for_expert(self, layer_id: int, expert_id: int) -> PackedExpertBatch | None:
+        if self.packed_store is None:
+            return None
+        return self.packed_store.tensors_for_expert(layer_id, expert_id)
+
 
 @dataclass
 class ExpertCacheStats:
     enabled: bool = False
     max_entries: int = 0
+    policy: str = "global_lru"
+    layer_quota: int = 0
     entries: int = 0
     resident_bytes: int = 0
     hits: int = 0
@@ -82,11 +205,17 @@ class ExpertCacheStats:
     routed_calls: int = 0
     routed_tokens: int = 0
     routed_activations: int = 0
+    packed_loads: int = 0
+    packed_misses: int = 0
+    packed_read_seconds: float = 0.0
+    packed_read_bytes: int = 0
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "enabled": self.enabled,
             "max_entries": self.max_entries,
+            "policy": self.policy,
+            "layer_quota": self.layer_quota,
             "entries": self.entries,
             "resident_bytes": self.resident_bytes,
             "hits": self.hits,
@@ -98,6 +227,10 @@ class ExpertCacheStats:
             "routed_calls": self.routed_calls,
             "routed_tokens": self.routed_tokens,
             "routed_activations": self.routed_activations,
+            "packed_loads": self.packed_loads,
+            "packed_misses": self.packed_misses,
+            "packed_read_seconds": self.packed_read_seconds,
+            "packed_read_bytes": self.packed_read_bytes,
         }
 
 
@@ -118,13 +251,26 @@ class ExpertCacheManager:
     def __init__(self, max_entries: int):
         self.max_entries = max(0, max_entries)
         self.enabled = self.max_entries > 0
+        self.policy = os.getenv("DEEPSEEK_SPARK_EXPERT_CACHE_POLICY", "global_lru")
+        if self.policy not in {"global_lru", "layer_lru"}:
+            raise ValueError(f"unknown expert cache policy: {self.policy}")
+        layer_count = max(1, int(os.getenv("DEEPSEEK_SPARK_EXPERT_CACHE_LAYER_COUNT", "43")))
+        default_layer_quota = max(1, self.max_entries // layer_count) if self.enabled else 0
+        self.layer_quota = int(
+            os.getenv("DEEPSEEK_SPARK_EXPERT_CACHE_LAYER_QUOTA", str(default_layer_quota))
+        )
         trace_path = os.getenv("DEEPSEEK_SPARK_EXPERT_ROUTE_TRACE_JSONL")
         self.route_trace_path = Path(trace_path) if trace_path else None
         self._lock = threading.Lock()
         self._entries: dict[tuple[int, int], LazyRoutedExpert] = {}
         self._access_counter = 0
         self._resident_bytes = 0
-        self.stats = ExpertCacheStats(enabled=self.enabled, max_entries=self.max_entries)
+        self.stats = ExpertCacheStats(
+            enabled=self.enabled,
+            max_entries=self.max_entries,
+            policy=self.policy,
+            layer_quota=self.layer_quota,
+        )
         if self.route_trace_path is not None:
             self.route_trace_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -152,6 +298,15 @@ class ExpertCacheManager:
         with self._lock:
             self.stats.materialize_seconds += seconds
             self.stats.copied_bytes += copied_bytes
+
+    def record_packed_load(self, *, hit: bool, seconds: float = 0.0, read_bytes: int = 0) -> None:
+        with self._lock:
+            if hit:
+                self.stats.packed_loads += 1
+                self.stats.packed_read_seconds += seconds
+                self.stats.packed_read_bytes += read_bytes
+            else:
+                self.stats.packed_misses += 1
 
     def insert(self, expert: "LazyRoutedExpert", resident_bytes: int) -> None:
         if not self.enabled:
@@ -224,6 +379,15 @@ class ExpertCacheManager:
                 handle.write(line + "\n")
 
     def _evict_locked(self) -> None:
+        if self.policy == "layer_lru" and self.layer_quota > 0:
+            by_layer: dict[int, list[LazyRoutedExpert]] = defaultdict(list)
+            for expert in self._entries.values():
+                by_layer[expert.layer_id].append(expert)
+            for experts in by_layer.values():
+                while len(experts) > self.layer_quota:
+                    victim = min(experts, key=lambda expert: expert._cache_last_used)
+                    experts.remove(victim)
+                    self._drop_locked(victim)
         while len(self._entries) > self.max_entries:
             _, victim = min(
                 self._entries.items(),
@@ -246,6 +410,7 @@ class ExpertCacheManager:
 
 
 _EXPERT_CACHE_MANAGER: ExpertCacheManager | None = None
+_MATERIALIZE_EXECUTOR: ThreadPoolExecutor | None = None
 
 
 def configure_expert_cache(max_entries: int | None = None) -> ExpertCacheManager:
@@ -271,6 +436,19 @@ def expert_cache_snapshot() -> dict[str, Any]:
 
 def expert_cache_delta(before: dict[str, Any], after: dict[str, Any]) -> dict[str, Any]:
     return _stats_delta(before, after)
+
+
+def expert_materialize_executor() -> ThreadPoolExecutor | None:
+    global _MATERIALIZE_EXECUTOR
+    workers = int(os.getenv("DEEPSEEK_SPARK_EXPERT_MATERIALIZE_WORKERS", "0"))
+    if workers <= 1:
+        return None
+    if _MATERIALIZE_EXECUTOR is None:
+        _MATERIALIZE_EXECUTOR = ThreadPoolExecutor(
+            max_workers=workers,
+            thread_name_prefix="expert-materialize",
+        )
+    return _MATERIALIZE_EXECUTOR
 
 
 class LazyRoutedExpert(torch.nn.Module):
@@ -315,10 +493,23 @@ class LazyRoutedExpert(torch.nn.Module):
             dtype=dtype,
             swiglu_limit=self.args.swiglu_limit,
         ).to(device)
+        packed_batch = self.weight_store.packed_tensors_for_expert(self.layer_id, self.expert_id)
+        if packed_batch is not None:
+            self.cache_manager.record_packed_load(
+                hit=True,
+                seconds=packed_batch.read_seconds,
+                read_bytes=packed_batch.read_bytes,
+            )
+        elif self.weight_store.packed_store is not None:
+            self.cache_manager.record_packed_load(hit=False)
         copied_bytes = 0
         for name, param in expert.named_parameters():
             target = f"{self.prefix}.{name}"
-            row, tensor = self.weight_store.tensor_for_target(target)
+            row = self.weight_store.rows_by_target[target]
+            if packed_batch is not None and target in packed_batch.tensors:
+                tensor = packed_batch.tensors[target]
+            else:
+                tensor = self.weight_store.tensor_for_row(row)
             if row.transform == "reinterpret_int8_as_fp4":
                 tensor = tensor.view(torch.float4_e2m1fn_x2)
             tensor = tensor.to(device=param.device, dtype=param.dtype)
@@ -344,7 +535,12 @@ class LazyRoutedExpert(torch.nn.Module):
     def _drop_cached(self) -> None:
         self._expert = None
         self._cache_resident_bytes = 0
-        torch.cuda.empty_cache()
+        empty_cache_mode = os.getenv("DEEPSEEK_SPARK_EMPTY_CACHE_ON_EVICT", "uncached")
+        should_empty_cache = empty_cache_mode in {"1", "true", "always"} or (
+            empty_cache_mode == "uncached" and not self.cache_manager.enabled
+        )
+        if should_empty_cache:
+            torch.cuda.empty_cache()
 
     def forward(self, x: torch.Tensor, weights: torch.Tensor | None = None) -> torch.Tensor:
         expert = self.materialize(x.device)
@@ -400,9 +596,11 @@ class LazyMoE(torch.nn.Module):
             input_ids=input_ids.flatten(),
             expert_indices=indices,
         )
-        for i in range(self.experts_start_idx, self.experts_end_idx):
-            if counts[i] == 0:
-                continue
+        active_experts = [
+            i for i in range(self.experts_start_idx, self.experts_end_idx) if counts[i] != 0
+        ]
+        self._prefetch_active_experts(active_experts, x.device)
+        for i in active_experts:
             expert = self.experts[i]
             idx, top = torch.where(indices == i)
             y[idx] += expert(x[idx], weights[idx, top, None])
@@ -410,6 +608,17 @@ class LazyMoE(torch.nn.Module):
             dist.all_reduce(y)
         y += self.shared_experts(x)
         return y.type_as(x).view(shape)
+
+    def _prefetch_active_experts(self, active_experts: list[int], device: torch.device) -> None:
+        executor = expert_materialize_executor()
+        if executor is None or len(active_experts) <= 1:
+            return
+        futures = [
+            executor.submit(self.experts[expert_id].materialize, device)
+            for expert_id in active_experts
+        ]
+        for future in futures:
+            future.result()
 
 
 def import_official_model(inference_dir: Path):
