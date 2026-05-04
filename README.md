@@ -22,8 +22,8 @@ Working baseline:
 - structured JSONL telemetry, NVTX ranges, optional CUDA event timers, and per-request
   API metrics
 - checked-in experiment logs and summaries under `docs/experiments/` and `results/`
-- current best full-layout 32-token decode recipe: native packed loader, native
-  materializer, and 256-slot expert arena at 16.516s for 32 tokens on the measured Spark
+- current best full-layout 32-token decode recipe: native packed loader, native CUDA
+  materializer, and 256-slot expert arena at 16.239s for 32 tokens on the measured Spark
 
 Known limitations:
 
@@ -151,6 +151,10 @@ export DEEPSEEK_SPARK_DIRECT_PARAM_COPY=1
 export DEEPSEEK_SPARK_PARAM_COPY_NON_BLOCKING=1
 export DEEPSEEK_SPARK_NATIVE_MATERIALIZER=1
 export DEEPSEEK_SPARK_EXPERT_ARENA_SLOTS=256
+export DEEPSEEK_SPARK_NATIVE_WITH_CUDA=1
+export DEEPSEEK_SPARK_NATIVE_COPY_PLAN=1
+export DEEPSEEK_SPARK_NATIVE_FUSED_MATERIALIZER=1
+export DEEPSEEK_SPARK_NATIVE_CUDA_MEMCPY=1
 export DEEPSEEK_SPARK_NATIVE_BUILD_DIR=/runs/torch-extensions/native-packed-loader
 
 python3 -m uvicorn spark_runtime.server:app --host 127.0.0.1 --port 18080

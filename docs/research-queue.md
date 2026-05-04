@@ -2,7 +2,7 @@
 
 Date: 2026-05-04
 
-This queue reflects the second flash-moe pass and experiments 030-047.
+This queue reflects the second flash-moe pass and experiments 030-050.
 
 ## Current Best Recipe
 
@@ -17,8 +17,13 @@ This queue reflects the second flash-moe pass and experiments 030-047.
 - `DEEPSEEK_SPARK_PARAM_COPY_NON_BLOCKING=1`.
 - `DEEPSEEK_SPARK_NATIVE_MATERIALIZER=1`.
 - `DEEPSEEK_SPARK_EXPERT_ARENA_SLOTS=256`.
+- `DEEPSEEK_SPARK_NATIVE_WITH_CUDA=1`.
+- `DEEPSEEK_SPARK_NATIVE_COPY_PLAN=1`.
+- `DEEPSEEK_SPARK_NATIVE_FUSED_MATERIALIZER=1`.
+- `DEEPSEEK_SPARK_NATIVE_CUDA_MEMCPY=1`.
 
-Best controlled deployable 32-token decode is now the E043 full-layout arena recipe:
+Best observed controlled deployable 32-token decode is now the E050 full-layout arena
+plus native CUDA materializer recipe:
 
 | Run | Decode | Tok/s |
 | --- | ---: | ---: |
@@ -28,6 +33,7 @@ Best controlled deployable 32-token decode is now the E043 full-layout arena rec
 | E044 materialize workers 2 | 50.415s | 0.635 |
 | E046 hot-first full layout | 30.899s | 1.036 |
 | E049 native CUDA materializer | 21.901s | 1.461 |
+| E050 arena plus native CUDA A/B best | 16.239s | 1.971 |
 
 The fastest controlled 8-token matrix row is `full-t8-native-c1024` at 5.213s
 and 1.535 tok/s. The older E040 5.036s route-filtered run remains useful history, but
@@ -40,6 +46,8 @@ E041 is the cleaner same-day comparison point.
    - E047 showed native copy plans are correct but not enough by themselves.
    - E049 showed planned `cudaMemcpyAsync` is a useful primitive against a same-window
      baseline, but not yet a new absolute best.
+   - E050 showed the CUDA copy path and expert arena combine into the new best observed
+     32-token deployable row.
    - The next target is fewer larger native transfers and one native call per layer's
      routed misses.
 
