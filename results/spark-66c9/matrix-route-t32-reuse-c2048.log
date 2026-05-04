@@ -1,0 +1,239 @@
+==== 2026-05-03T22:02:56-04:00 guarded docker run start ====
+command: docker run --rm --name matrix-route-t32-reuse-c2048 --runtime=nvidia --gpus all --memory 112g --memory-swap 120g -v /home/cole/deepseek-v4-flash-dgx-spark:/repo:ro -v /home/cole/models/deepseek-v4-flash/hf:/model:ro -v /home/cole/runs/deepseek-v4-flash:/runs -e PYTHONPATH=/repo:/repo/spark_runtime:/model/inference -e PYTHONDONTWRITEBYTECODE=1 -e DEEPSEEK_SPARK_MODEL_DIR=/model -e DEEPSEEK_SPARK_MANIFEST_CSV=/repo/results/spark-66c9/weight-manifest.csv -e DEEPSEEK_SPARK_TELEMETRY_JSONL=/runs/matrix-route-t32-reuse-c2048.jsonl -e DEEPSEEK_SPARK_POSTFILL_MODE=deferred -e DEEPSEEK_SPARK_EXPERT_CACHE_ENTRIES=2048 -e DEEPSEEK_SPARK_EXPERT_CACHE_POLICY=layer_lru -e DEEPSEEK_SPARK_EXPERT_CACHE_LAYER_COUNT=43 -e DEEPSEEK_SPARK_PACKED_EXPERT_LAYOUT=/runs/packed-route-e018/layout.json -e DEEPSEEK_SPARK_NATIVE_BUILD_DIR=/runs/torch-extensions/native-packed-loader -e DEEPSEEK_SPARK_PACKED_REUSE_STAGING=1 --entrypoint /bin/bash deepseek-v4-flash-spark:tilelang -lc 'cd /repo && python3 /repo/scripts/probe_server_http.py --prompt "Hello" --max-tokens 32 --skip-chat'
+guard: memory=112g memory_swap=120g min_mem_available_gib=12.0 timeout_seconds=2400.0
+[2026-05-03T22:02:56-04:00] guard: initial MemAvailable=118.30 GiB
+[2026-05-03T22:02:56-04:00] guard: elapsed=0.0s MemAvailable=118.30 GiB
+[2026-05-03T22:02:58-04:00] guard: elapsed=2.0s MemAvailable=118.19 GiB
+[2026-05-03T22:03:00-04:00] guard: elapsed=4.0s MemAvailable=117.98 GiB
+[2026-05-03T22:03:02-04:00] guard: elapsed=6.0s MemAvailable=117.92 GiB
+[2026-05-03T22:03:04-04:00] guard: elapsed=8.0s MemAvailable=117.90 GiB
+[2026-05-03T22:03:06-04:00] guard: elapsed=10.0s MemAvailable=117.90 GiB
+[2026-05-03T22:03:08-04:00] guard: elapsed=12.0s MemAvailable=117.87 GiB
+INFO:     Started server process [47]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18080 (Press CTRL+C to quit)
+INFO:     127.0.0.1:54516 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54524 - "GET /v1/models HTTP/1.1" 200 OK
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:435: UserWarning:
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+
+  queued_call()
+/repo/spark_runtime/lazy_official_runtime.py:801: FutureWarning: torch.cuda._set_allocator_settings is deprecated. Use torch._C._accelerator_setAllocatorSettings instead.
+  torch.cuda.memory._set_allocator_settings("expandable_segments:True")
+[2026-05-03T22:03:10-04:00] guard: elapsed=14.0s MemAvailable=117.56 GiB
+[2026-05-03T22:03:12-04:00] guard: elapsed=16.0s MemAvailable=103.41 GiB
+[2026-05-03T22:03:14-04:00] guard: elapsed=18.0s MemAvailable=76.84 GiB
+[2026-05-03T22:03:16-04:00] guard: elapsed=20.0s MemAvailable=76.58 GiB
+[2026-05-03T22:03:18-04:00] guard: elapsed=22.0s MemAvailable=76.32 GiB
+[2026-05-03T22:03:20-04:00] guard: elapsed=24.0s MemAvailable=76.06 GiB
+[2026-05-03T22:03:22-04:00] guard: elapsed=26.0s MemAvailable=75.77 GiB
+[2026-05-03T22:03:24-04:00] guard: elapsed=28.0s MemAvailable=75.48 GiB
+[2026-05-03T22:03:26-04:00] guard: elapsed=30.0s MemAvailable=75.25 GiB
+[2026-05-03T22:03:28-04:00] guard: elapsed=32.0s MemAvailable=74.78 GiB
+[2026-05-03T22:03:30-04:00] guard: elapsed=34.0s MemAvailable=74.53 GiB
+[2026-05-03T22:03:32-04:00] guard: elapsed=36.0s MemAvailable=74.28 GiB
+[2026-05-03T22:03:34-04:00] guard: elapsed=38.0s MemAvailable=74.07 GiB
+[2026-05-03T22:03:36-04:00] guard: elapsed=40.0s MemAvailable=73.87 GiB
+[2026-05-03T22:03:38-04:00] guard: elapsed=42.0s MemAvailable=73.84 GiB
+[2026-05-03T22:03:40-04:00] guard: elapsed=44.0s MemAvailable=73.63 GiB
+[2026-05-03T22:03:42-04:00] guard: elapsed=46.0s MemAvailable=73.38 GiB
+[2026-05-03T22:03:44-04:00] guard: elapsed=48.0s MemAvailable=73.23 GiB
+[2026-05-03T22:03:46-04:00] guard: elapsed=50.0s MemAvailable=73.01 GiB
+[2026-05-03T22:03:48-04:00] guard: elapsed=52.0s MemAvailable=72.57 GiB
+[2026-05-03T22:03:50-04:00] guard: elapsed=54.0s MemAvailable=72.40 GiB
+[2026-05-03T22:03:52-04:00] guard: elapsed=56.0s MemAvailable=72.21 GiB
+[2026-05-03T22:03:54-04:00] guard: elapsed=58.0s MemAvailable=72.02 GiB
+[2026-05-03T22:03:56-04:00] guard: elapsed=60.0s MemAvailable=71.81 GiB
+[2026-05-03T22:03:58-04:00] guard: elapsed=62.0s MemAvailable=71.63 GiB
+[2026-05-03T22:04:00-04:00] guard: elapsed=64.0s MemAvailable=71.43 GiB
+[2026-05-03T22:04:02-04:00] guard: elapsed=66.0s MemAvailable=71.50 GiB
+[2026-05-03T22:04:04-04:00] guard: elapsed=68.0s MemAvailable=71.32 GiB
+[2026-05-03T22:04:06-04:00] guard: elapsed=70.0s MemAvailable=68.13 GiB
+[2026-05-03T22:04:08-04:00] guard: elapsed=72.0s MemAvailable=67.89 GiB
+[2026-05-03T22:04:10-04:00] guard: elapsed=74.0s MemAvailable=67.85 GiB
+[2026-05-03T22:04:12-04:00] guard: elapsed=76.0s MemAvailable=67.66 GiB
+[2026-05-03T22:04:14-04:00] guard: elapsed=78.0s MemAvailable=67.33 GiB
+[2026-05-03T22:04:16-04:00] guard: elapsed=80.0s MemAvailable=67.23 GiB
+[2026-05-03T22:04:18-04:00] guard: elapsed=82.0s MemAvailable=66.79 GiB
+[2026-05-03T22:04:20-04:00] guard: elapsed=84.0s MemAvailable=66.73 GiB
+[2026-05-03T22:04:22-04:00] guard: elapsed=86.0s MemAvailable=66.75 GiB
+[2026-05-03T22:04:24-04:00] guard: elapsed=88.0s MemAvailable=66.65 GiB
+[2026-05-03T22:04:26-04:00] guard: elapsed=90.0s MemAvailable=66.74 GiB
+[2026-05-03T22:04:28-04:00] guard: elapsed=92.0s MemAvailable=66.60 GiB
+[2026-05-03T22:04:30-04:00] guard: elapsed=94.0s MemAvailable=66.44 GiB
+[2026-05-03T22:04:32-04:00] guard: elapsed=96.0s MemAvailable=66.44 GiB
+[2026-05-03T22:04:34-04:00] guard: elapsed=98.0s MemAvailable=66.16 GiB
+[2026-05-03T22:04:36-04:00] guard: elapsed=100.0s MemAvailable=66.18 GiB
+[2026-05-03T22:04:38-04:00] guard: elapsed=102.0s MemAvailable=66.21 GiB
+[2026-05-03T22:04:40-04:00] guard: elapsed=104.0s MemAvailable=65.94 GiB
+[2026-05-03T22:04:42-04:00] guard: elapsed=106.0s MemAvailable=65.93 GiB
+[2026-05-03T22:04:44-04:00] guard: elapsed=108.0s MemAvailable=65.93 GiB
+[2026-05-03T22:04:46-04:00] guard: elapsed=110.0s MemAvailable=65.82 GiB
+[2026-05-03T22:04:48-04:00] guard: elapsed=112.0s MemAvailable=65.87 GiB
+[2026-05-03T22:04:50-04:00] guard: elapsed=114.0s MemAvailable=65.65 GiB
+[2026-05-03T22:04:52-04:00] guard: elapsed=116.0s MemAvailable=65.60 GiB
+[2026-05-03T22:04:54-04:00] guard: elapsed=118.0s MemAvailable=65.68 GiB
+[2026-05-03T22:04:56-04:00] guard: elapsed=120.0s MemAvailable=65.73 GiB
+[2026-05-03T22:04:58-04:00] guard: elapsed=122.0s MemAvailable=65.73 GiB
+[2026-05-03T22:05:00-04:00] guard: elapsed=124.0s MemAvailable=65.72 GiB
+[2026-05-03T22:05:02-04:00] guard: elapsed=126.0s MemAvailable=65.43 GiB
+[2026-05-03T22:05:04-04:00] guard: elapsed=128.0s MemAvailable=65.42 GiB
+[2026-05-03T22:05:06-04:00] guard: elapsed=130.0s MemAvailable=65.47 GiB
+[2026-05-03T22:05:08-04:00] guard: elapsed=132.0s MemAvailable=65.45 GiB
+[2026-05-03T22:05:10-04:00] guard: elapsed=134.0s MemAvailable=65.52 GiB
+[2026-05-03T22:05:12-04:00] guard: elapsed=136.0s MemAvailable=65.46 GiB
+[2026-05-03T22:05:14-04:00] guard: elapsed=138.0s MemAvailable=65.38 GiB
+[2026-05-03T22:05:16-04:00] guard: elapsed=140.0s MemAvailable=65.48 GiB
+[2026-05-03T22:05:18-04:00] guard: elapsed=142.0s MemAvailable=65.26 GiB
+[2026-05-03T22:05:20-04:00] guard: elapsed=144.0s MemAvailable=65.27 GiB
+[2026-05-03T22:05:22-04:00] guard: elapsed=146.0s MemAvailable=65.39 GiB
+[2026-05-03T22:05:24-04:00] guard: elapsed=148.0s MemAvailable=65.46 GiB
+[2026-05-03T22:05:26-04:00] guard: elapsed=150.0s MemAvailable=65.51 GiB
+[2026-05-03T22:05:28-04:00] guard: elapsed=152.0s MemAvailable=65.56 GiB
+[2026-05-03T22:05:30-04:00] guard: elapsed=154.0s MemAvailable=65.50 GiB
+[2026-05-03T22:05:32-04:00] guard: elapsed=156.0s MemAvailable=65.40 GiB
+[2026-05-03T22:05:34-04:00] guard: elapsed=158.0s MemAvailable=65.49 GiB
+[2026-05-03T22:05:36-04:00] guard: elapsed=160.0s MemAvailable=65.46 GiB
+[2026-05-03T22:05:38-04:00] guard: elapsed=162.0s MemAvailable=65.41 GiB
+[2026-05-03T22:05:40-04:00] guard: elapsed=164.0s MemAvailable=63.74 GiB
+[2026-05-03T22:05:42-04:00] guard: elapsed=166.0s MemAvailable=59.80 GiB
+[2026-05-03T22:05:44-04:00] guard: elapsed=168.0s MemAvailable=56.42 GiB
+[2026-05-03T22:05:46-04:00] guard: elapsed=170.1s MemAvailable=55.31 GiB
+[2026-05-03T22:05:48-04:00] guard: elapsed=172.1s MemAvailable=53.81 GiB
+[2026-05-03T22:05:50-04:00] guard: elapsed=174.1s MemAvailable=53.44 GiB
+[2026-05-03T22:05:52-04:00] guard: elapsed=176.1s MemAvailable=53.08 GiB
+[2026-05-03T22:05:54-04:00] guard: elapsed=178.1s MemAvailable=52.72 GiB
+[2026-05-03T22:05:56-04:00] guard: elapsed=180.1s MemAvailable=52.33 GiB
+[2026-05-03T22:05:58-04:00] guard: elapsed=182.1s MemAvailable=51.94 GiB
+[2026-05-03T22:06:00-04:00] guard: elapsed=184.1s MemAvailable=51.71 GiB
+[2026-05-03T22:06:02-04:00] guard: elapsed=186.1s MemAvailable=51.38 GiB
+[2026-05-03T22:06:04-04:00] guard: elapsed=188.1s MemAvailable=51.01 GiB
+[2026-05-03T22:06:06-04:00] guard: elapsed=190.1s MemAvailable=50.65 GiB
+[2026-05-03T22:06:08-04:00] guard: elapsed=192.1s MemAvailable=50.29 GiB
+[2026-05-03T22:06:10-04:00] guard: elapsed=194.1s MemAvailable=49.92 GiB
+[2026-05-03T22:06:12-04:00] guard: elapsed=196.1s MemAvailable=49.68 GiB
+[2026-05-03T22:06:14-04:00] guard: elapsed=198.1s MemAvailable=49.37 GiB
+[2026-05-03T22:06:16-04:00] guard: elapsed=200.1s MemAvailable=49.00 GiB
+[2026-05-03T22:06:18-04:00] guard: elapsed=202.1s MemAvailable=48.67 GiB
+[2026-05-03T22:06:20-04:00] guard: elapsed=204.1s MemAvailable=48.29 GiB
+[2026-05-03T22:06:22-04:00] guard: elapsed=206.1s MemAvailable=48.05 GiB
+[2026-05-03T22:06:24-04:00] guard: elapsed=208.1s MemAvailable=47.73 GiB
+[2026-05-03T22:06:26-04:00] guard: elapsed=210.1s MemAvailable=47.35 GiB
+[2026-05-03T22:06:28-04:00] guard: elapsed=212.1s MemAvailable=46.96 GiB
+[2026-05-03T22:06:30-04:00] guard: elapsed=214.1s MemAvailable=46.66 GiB
+[2026-05-03T22:06:32-04:00] guard: elapsed=216.1s MemAvailable=46.38 GiB
+[2026-05-03T22:06:34-04:00] guard: elapsed=218.1s MemAvailable=45.99 GiB
+[2026-05-03T22:06:36-04:00] guard: elapsed=220.1s MemAvailable=45.66 GiB
+[2026-05-03T22:06:38-04:00] guard: elapsed=222.1s MemAvailable=45.25 GiB
+[2026-05-03T22:06:40-04:00] guard: elapsed=224.1s MemAvailable=44.89 GiB
+[2026-05-03T22:06:42-04:00] guard: elapsed=226.1s MemAvailable=44.65 GiB
+[2026-05-03T22:06:44-04:00] guard: elapsed=228.1s MemAvailable=44.26 GiB
+[2026-05-03T22:06:46-04:00] guard: elapsed=230.1s MemAvailable=43.90 GiB
+[2026-05-03T22:06:48-04:00] guard: elapsed=232.1s MemAvailable=43.50 GiB
+[2026-05-03T22:06:50-04:00] guard: elapsed=234.1s MemAvailable=43.12 GiB
+[2026-05-03T22:06:52-04:00] guard: elapsed=236.1s MemAvailable=42.88 GiB
+[2026-05-03T22:06:54-04:00] guard: elapsed=238.1s MemAvailable=42.62 GiB
+[2026-05-03T22:06:56-04:00] guard: elapsed=240.1s MemAvailable=42.72 GiB
+[2026-05-03T22:06:58-04:00] guard: elapsed=242.1s MemAvailable=42.47 GiB
+[2026-05-03T22:07:00-04:00] guard: elapsed=244.1s MemAvailable=42.22 GiB
+[2026-05-03T22:07:02-04:00] guard: elapsed=246.1s MemAvailable=41.93 GiB
+[2026-05-03T22:07:04-04:00] guard: elapsed=248.1s MemAvailable=41.71 GiB
+[2026-05-03T22:07:06-04:00] guard: elapsed=250.1s MemAvailable=41.46 GiB
+[2026-05-03T22:07:08-04:00] guard: elapsed=252.1s MemAvailable=41.12 GiB
+[2026-05-03T22:07:10-04:00] guard: elapsed=254.1s MemAvailable=40.73 GiB
+[2026-05-03T22:07:12-04:00] guard: elapsed=256.1s MemAvailable=40.36 GiB
+[2026-05-03T22:07:14-04:00] guard: elapsed=258.1s MemAvailable=39.97 GiB
+[2026-05-03T22:07:16-04:00] guard: elapsed=260.1s MemAvailable=39.57 GiB
+[2026-05-03T22:07:18-04:00] guard: elapsed=262.1s MemAvailable=39.17 GiB
+[2026-05-03T22:07:20-04:00] guard: elapsed=264.1s MemAvailable=38.87 GiB
+[2026-05-03T22:07:22-04:00] guard: elapsed=266.1s MemAvailable=38.56 GiB
+[2026-05-03T22:07:24-04:00] guard: elapsed=268.1s MemAvailable=38.19 GiB
+[2026-05-03T22:07:26-04:00] guard: elapsed=270.1s MemAvailable=37.88 GiB
+[2026-05-03T22:07:28-04:00] guard: elapsed=272.1s MemAvailable=37.44 GiB
+[2026-05-03T22:07:30-04:00] guard: elapsed=274.1s MemAvailable=37.04 GiB
+[2026-05-03T22:07:32-04:00] guard: elapsed=276.1s MemAvailable=36.67 GiB
+[2026-05-03T22:07:34-04:00] guard: elapsed=278.1s MemAvailable=36.36 GiB
+[2026-05-03T22:07:36-04:00] guard: elapsed=280.1s MemAvailable=36.04 GiB
+[2026-05-03T22:07:38-04:00] guard: elapsed=282.1s MemAvailable=35.97 GiB
+[2026-05-03T22:07:40-04:00] guard: elapsed=284.1s MemAvailable=36.40 GiB
+[2026-05-03T22:07:42-04:00] guard: elapsed=286.1s MemAvailable=36.39 GiB
+[2026-05-03T22:07:44-04:00] guard: elapsed=288.1s MemAvailable=36.35 GiB
+[2026-05-03T22:07:46-04:00] guard: elapsed=290.1s MemAvailable=36.44 GiB
+[2026-05-03T22:07:48-04:00] guard: elapsed=292.1s MemAvailable=36.21 GiB
+[2026-05-03T22:07:50-04:00] guard: elapsed=294.1s MemAvailable=36.00 GiB
+[2026-05-03T22:07:52-04:00] guard: elapsed=296.1s MemAvailable=35.81 GiB
+[2026-05-03T22:07:54-04:00] guard: elapsed=298.1s MemAvailable=35.60 GiB
+[2026-05-03T22:07:56-04:00] guard: elapsed=300.1s MemAvailable=35.44 GiB
+[2026-05-03T22:07:58-04:00] guard: elapsed=302.1s MemAvailable=35.30 GiB
+[2026-05-03T22:08:00-04:00] guard: elapsed=304.1s MemAvailable=35.06 GiB
+[2026-05-03T22:08:02-04:00] guard: elapsed=306.1s MemAvailable=34.83 GiB
+[2026-05-03T22:08:04-04:00] guard: elapsed=308.1s MemAvailable=34.54 GiB
+[2026-05-03T22:08:06-04:00] guard: elapsed=310.1s MemAvailable=34.52 GiB
+[2026-05-03T22:08:08-04:00] guard: elapsed=312.1s MemAvailable=34.36 GiB
+[2026-05-03T22:08:10-04:00] guard: elapsed=314.1s MemAvailable=34.10 GiB
+[2026-05-03T22:08:12-04:00] guard: elapsed=316.1s MemAvailable=33.90 GiB
+[2026-05-03T22:08:14-04:00] guard: elapsed=318.1s MemAvailable=33.66 GiB
+[2026-05-03T22:08:16-04:00] guard: elapsed=320.1s MemAvailable=33.47 GiB
+[2026-05-03T22:08:18-04:00] guard: elapsed=322.1s MemAvailable=33.36 GiB
+[2026-05-03T22:08:20-04:00] guard: elapsed=324.1s MemAvailable=33.45 GiB
+[2026-05-03T22:08:22-04:00] guard: elapsed=326.1s MemAvailable=33.21 GiB
+[2026-05-03T22:08:24-04:00] guard: elapsed=328.1s MemAvailable=32.99 GiB
+[2026-05-03T22:08:26-04:00] guard: elapsed=330.1s MemAvailable=32.73 GiB
+[2026-05-03T22:08:28-04:00] guard: elapsed=332.1s MemAvailable=32.79 GiB
+[2026-05-03T22:08:30-04:00] guard: elapsed=334.1s MemAvailable=32.82 GiB
+[2026-05-03T22:08:32-04:00] guard: elapsed=336.1s MemAvailable=32.59 GiB
+[2026-05-03T22:08:34-04:00] guard: elapsed=338.1s MemAvailable=32.57 GiB
+[2026-05-03T22:08:36-04:00] guard: elapsed=340.1s MemAvailable=32.60 GiB
+[2026-05-03T22:08:38-04:00] guard: elapsed=342.1s MemAvailable=32.50 GiB
+[2026-05-03T22:08:40-04:00] guard: elapsed=344.1s MemAvailable=32.47 GiB
+[2026-05-03T22:08:42-04:00] guard: elapsed=346.1s MemAvailable=32.26 GiB
+[2026-05-03T22:08:44-04:00] guard: elapsed=348.1s MemAvailable=32.05 GiB
+[2026-05-03T22:08:46-04:00] guard: elapsed=350.1s MemAvailable=31.80 GiB
+[2026-05-03T22:08:48-04:00] guard: elapsed=352.1s MemAvailable=31.59 GiB
+INFO:     127.0.0.1:54540 - "POST /v1/completions HTTP/1.1" 200 OK
+[2026-05-03T22:08:50-04:00] guard: elapsed=354.1s MemAvailable=31.40 GiB
+[2026-05-03T22:08:52-04:00] guard: elapsed=356.1s MemAvailable=31.20 GiB
+INFO:     127.0.0.1:59838 - "POST /v1/completions HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2026-05-03T22:08:54-04:00] guard: elapsed=358.1s MemAvailable=35.62 GiB
+[2026-05-03T22:08:56-04:00] guard: elapsed=360.1s MemAvailable=46.28 GiB
+INFO:     Application shutdown complete.
+INFO:     Finished server process [47]
+[2026-05-03T22:08:58-04:00] guard: elapsed=362.1s MemAvailable=54.72 GiB
+models {'elapsed_seconds': 0.0011773550068028271, 'response': {'object': 'list', 'data': [{'id': 'deepseek-v4-flash-dgx-spark', 'object': 'model', 'created': 0, 'owned_by': 'local'}]}}
+completion {'elapsed_seconds': 340.91575129900593, 'response': {'id': 'cmpl-be37a92251cb4fe7a33061aa22f45e16', 'object': 'text_completion', 'created': 1777860530, 'model': 'deepseek-v4-flash-dgx-spark', 'choices': [{'index': 0, 'text': 'World = function() {\n    return "Hello World";\n};\n\nmodule.exports = {\n    sayHelloWorld: sayHelloWorld\n};\n```\n\n### 2. ', 'finish_reason': 'length'}], 'usage': {'prompt_tokens': 1, 'completion_tokens': 32, 'total_tokens': 33}, 'spark_metrics': {'request_id': '84470344ce5e4e15beb01ca680f1ec48', 'reused_prefix_tokens': 0, 'newly_prefilled_tokens': 1, 'generated_token_ids': [21133, 438, 2019, 1393, 875, 361, 1354, 582, 19923, 4495, 5493, 12797, 20038, 35432, 438, 875, 361, 2507, 19923, 21133, 28, 2507, 19923, 21133, 201, 12774, 20759, 795, 223, 20, 16, 223], 'full_text': 'HelloWorld = function() {\n    return "Hello World";\n};\n\nmodule.exports = {\n    sayHelloWorld: sayHelloWorld\n};\n```\n\n### 2. ', 'finish_reason': 'length', 'deferred_postfill_scheduled': True, 'timings': {'encode_seconds': 0.00016539101488888264, 'prefill_seconds': 93.52822024200577, 'prefill_cuda_ms': None, 'cache_resume_hit': 0.0, 'decode_seconds': 189.79159426200204, 'decode_cuda_ms': None, 'decode_step_count_recorded': 32, 'decode_step_wall_seconds': [1.442059908004012, 1.0908294009859674, 0.9989262160088401, 0.8634963970107492, 0.7635069290117826, 0.7525002589973155, 1.0665450929955114, 1.5262333799910266, 9.9848927409912, 12.160774144984316, 9.983720537013141, 8.84165662000305, 10.775575191015378, 4.734399790992029, 6.4252832859929185, 8.494302842998877, 5.508864339994034, 8.09641089400975, 3.2767349439964164, 3.6324562180088833, 5.818405023979722, 8.457546137011377, 8.896846179995919, 4.436452852998627, 5.242452409001999, 7.935454901016783, 10.973945797013585, 11.113239277008688, 8.58120401101769, 11.633163482008968, 6.269295040983707, 0.008225313009461388], 'decode_step_cuda_ms': [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None], 'postfill_seconds': 0.004253383987816051, 'postfill_cuda_ms': None, 'total_seconds': 340.7944320149836, 'queue_wait_seconds': 1.7871992895379663e-05, 'request_wall_seconds': 340.874959134002}, 'memory': {'before': [27122716672, 130663661568], 'after': [3217403904, 130663661568]}}}}
+cached_completion {'elapsed_seconds': 3.493074082012754, 'response': {'id': 'cmpl-2fc338cb381a4bbda9077c9a7b0d1842', 'object': 'text_completion', 'created': 1777860533, 'model': 'deepseek-v4-flash-dgx-spark', 'choices': [{'index': 0, 'text': '创建', 'finish_reason': 'length'}], 'usage': {'prompt_tokens': 33, 'completion_tokens': 1, 'total_tokens': 34}, 'spark_metrics': {'request_id': 'ff504441b8994e94ad6a60d53bacdc9b', 'reused_prefix_tokens': 33, 'newly_prefilled_tokens': 0, 'generated_token_ids': [10369], 'full_text': 'HelloWorld = function() {\n    return "Hello World";\n};\n\nmodule.exports = {\n    sayHelloWorld: sayHelloWorld\n};\n```\n\n### 2. 创建', 'finish_reason': 'length', 'deferred_postfill_scheduled': True, 'timings': {'encode_seconds': 0.0638221419940237, 'prefill_seconds': 3.349677217018325, 'prefill_cuda_ms': None, 'cache_resume_hit': 0.0, 'decode_seconds': 0.008086640998953953, 'decode_cuda_ms': None, 'decode_step_count_recorded': 1, 'decode_step_wall_seconds': [0.007959826005389914], 'decode_step_cuda_ms': [], 'postfill_seconds': 1.8367980374023318e-05, 'postfill_cuda_ms': None, 'total_seconds': 3.424912861024495, 'queue_wait_seconds': 1.1759984772652388e-05, 'request_wall_seconds': 3.4301593429991044}, 'memory': {'before': [3202592768, 130663661568], 'after': [2485653504, 130663661568]}}}}
+[2026-05-03T22:09:00-04:00] guard: docker exited return_code=0 reason=process exited
+[2026-05-03T22:09:00-04:00] guard: recovering NVIDIA driver memory
+[2026-05-03T22:09:00-04:00] guard: sudo -n systemctl stop nvidia-persistenced
+[2026-05-03T22:09:00-04:00] guard: sudo -n modprobe -r nvidia_uvm nvidia_drm nvidia_modeset nvidia
+[2026-05-03T22:09:01-04:00] guard: sudo -n modprobe nvidia
+[2026-05-03T22:09:04-04:00] guard: sudo -n modprobe nvidia_uvm
+[2026-05-03T22:09:04-04:00] guard: sudo -n systemctl start nvidia-persistenced
+               total        used        free      shared  buff/cache   available
+Mem:           121Gi       3.3Gi        89Gi       152Ki        30Gi       118Gi
+Swap:           15Gi        88Mi        15Gi
+Sun May  3 22:09:06 2026
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 590.48.01              Driver Version: 590.48.01      CUDA Version: 13.1     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GB10                    On  |   0000000F:01:00.0 Off |                  N/A |
+| N/A   42C    P0             14W /  N/A  | Not Supported          |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

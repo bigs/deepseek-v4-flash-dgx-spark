@@ -22,6 +22,8 @@ Working baseline:
 - structured JSONL telemetry, NVTX ranges, optional CUDA event timers, and per-request
   API metrics
 - checked-in experiment logs and summaries under `docs/experiments/` and `results/`
+- current best full-layout 32-token decode recipe: native packed loader, native
+  materializer, and 256-slot expert arena at 16.516s for 32 tokens on the measured Spark
 
 Known limitations:
 
@@ -147,6 +149,8 @@ export DEEPSEEK_SPARK_PACKED_NATIVE_LOADER=1
 export DEEPSEEK_SPARK_PACKED_NATIVE_PINNED_STAGING=1
 export DEEPSEEK_SPARK_DIRECT_PARAM_COPY=1
 export DEEPSEEK_SPARK_PARAM_COPY_NON_BLOCKING=1
+export DEEPSEEK_SPARK_NATIVE_MATERIALIZER=1
+export DEEPSEEK_SPARK_EXPERT_ARENA_SLOTS=256
 export DEEPSEEK_SPARK_NATIVE_BUILD_DIR=/runs/torch-extensions/native-packed-loader
 
 python3 -m uvicorn spark_runtime.server:app --host 127.0.0.1 --port 18080
@@ -222,13 +226,13 @@ machine labels from the original run environment.
 
 Near-term optimization work:
 
-- add a budgeted routed-expert cache and measure HtoD reduction with Nsight
-- record expert reuse/frequency telemetry to size that cache scientifically
-- build a packed per-layer expert layout and compare safetensors vs fixed-offset
-  `pread`
-- move the runtime onto packed expert reads before writing custom kernels
-- prototype native FP4/FP8 expert kernels after weight movement is under control
+- move the materializer further into native C++/CUDA with explicit staging and stream
+  ownership
+- replace Python-threaded overlap attempts with native I/O/copy scheduling
+- screen future packed-layout variants with longer route-trace replay before full
+  inference
+- prototype native FP4/FP8 expert kernels after weight movement and materialization are
+  under control
 - replace sparse attention fallback with a GB10-compatible kernel
-- revisit expert prefetch only after deterministic packed reads are measured
 - add stronger OpenAI-compatible request validation, cancellation, and queue controls
 - expose service metrics once the runtime path stabilizes

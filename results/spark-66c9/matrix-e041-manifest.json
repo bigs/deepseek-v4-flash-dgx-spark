@@ -1,0 +1,132 @@
+{
+  "scenarios": [
+    {
+      "cache_entries": 1024,
+      "layout_name": "route",
+      "layout_path": "/runs/packed-route-e018/layout.json",
+      "loader": "reuse",
+      "max_tokens": 8,
+      "name": "route-t8-reuse-c1024"
+    },
+    {
+      "cache_entries": 2048,
+      "layout_name": "route",
+      "layout_path": "/runs/packed-route-e018/layout.json",
+      "loader": "reuse",
+      "max_tokens": 8,
+      "name": "route-t8-reuse-c2048"
+    },
+    {
+      "cache_entries": 1024,
+      "layout_name": "route",
+      "layout_path": "/runs/packed-route-e018/layout.json",
+      "loader": "native",
+      "max_tokens": 8,
+      "name": "route-t8-native-c1024"
+    },
+    {
+      "cache_entries": 2048,
+      "layout_name": "route",
+      "layout_path": "/runs/packed-route-e018/layout.json",
+      "loader": "native",
+      "max_tokens": 8,
+      "name": "route-t8-native-c2048"
+    },
+    {
+      "cache_entries": 1024,
+      "layout_name": "route",
+      "layout_path": "/runs/packed-route-e018/layout.json",
+      "loader": "reuse",
+      "max_tokens": 32,
+      "name": "route-t32-reuse-c1024"
+    },
+    {
+      "cache_entries": 2048,
+      "layout_name": "route",
+      "layout_path": "/runs/packed-route-e018/layout.json",
+      "loader": "reuse",
+      "max_tokens": 32,
+      "name": "route-t32-reuse-c2048"
+    },
+    {
+      "cache_entries": 1024,
+      "layout_name": "route",
+      "layout_path": "/runs/packed-route-e018/layout.json",
+      "loader": "native",
+      "max_tokens": 32,
+      "name": "route-t32-native-c1024"
+    },
+    {
+      "cache_entries": 2048,
+      "layout_name": "route",
+      "layout_path": "/runs/packed-route-e018/layout.json",
+      "loader": "native",
+      "max_tokens": 32,
+      "name": "route-t32-native-c2048"
+    },
+    {
+      "cache_entries": 1024,
+      "layout_name": "full",
+      "layout_path": "/runs/packed-full-e018/layout.json",
+      "loader": "reuse",
+      "max_tokens": 8,
+      "name": "full-t8-reuse-c1024"
+    },
+    {
+      "cache_entries": 2048,
+      "layout_name": "full",
+      "layout_path": "/runs/packed-full-e018/layout.json",
+      "loader": "reuse",
+      "max_tokens": 8,
+      "name": "full-t8-reuse-c2048"
+    },
+    {
+      "cache_entries": 1024,
+      "layout_name": "full",
+      "layout_path": "/runs/packed-full-e018/layout.json",
+      "loader": "native",
+      "max_tokens": 8,
+      "name": "full-t8-native-c1024"
+    },
+    {
+      "cache_entries": 2048,
+      "layout_name": "full",
+      "layout_path": "/runs/packed-full-e018/layout.json",
+      "loader": "native",
+      "max_tokens": 8,
+      "name": "full-t8-native-c2048"
+    },
+    {
+      "cache_entries": 1024,
+      "layout_name": "full",
+      "layout_path": "/runs/packed-full-e018/layout.json",
+      "loader": "reuse",
+      "max_tokens": 32,
+      "name": "full-t32-reuse-c1024"
+    },
+    {
+      "cache_entries": 2048,
+      "layout_name": "full",
+      "layout_path": "/runs/packed-full-e018/layout.json",
+      "loader": "reuse",
+      "max_tokens": 32,
+      "name": "full-t32-reuse-c2048"
+    },
+    {
+      "cache_entries": 1024,
+      "layout_name": "full",
+      "layout_path": "/runs/packed-full-e018/layout.json",
+      "loader": "native",
+      "max_tokens": 32,
+      "name": "full-t32-native-c1024"
+    },
+    {
+      "cache_entries": 2048,
+      "layout_name": "full",
+      "layout_path": "/runs/packed-full-e018/layout.json",
+      "loader": "native",
+      "max_tokens": 32,
+      "name": "full-t32-native-c2048"
+    }
+  ]
+}

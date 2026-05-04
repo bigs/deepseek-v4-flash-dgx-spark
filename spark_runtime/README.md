@@ -62,6 +62,9 @@ engine so the official DeepSeek V4 encoding path can render them.
 | `DEEPSEEK_SPARK_NATIVE_BUILD_DIR` | unset | Optional persistent build directory for the PyTorch C++ extension. |
 | `DEEPSEEK_SPARK_DIRECT_PARAM_COPY` | `0` | Copy CPU expert tensor views directly into destination parameters. |
 | `DEEPSEEK_SPARK_PARAM_COPY_NON_BLOCKING` | `0` | Request non-blocking parameter copies. Use with pinned native staging. |
+| `DEEPSEEK_SPARK_NATIVE_MATERIALIZER` | `0` | Use the native extension to copy packed storage slices into expert parameters. |
+| `DEEPSEEK_SPARK_EXPERT_ARENA_SLOTS` | `0` | Reuse evicted expert modules from an arena instead of reallocating each miss. |
+| `DEEPSEEK_SPARK_EXPERT_MATERIALIZE_WORKERS` | `0` | Experimental Python materialization workers. E044 regressed; leave disabled. |
 
 Telemetry variables are parsed by `TelemetryConfig.from_env()`:
 
@@ -138,6 +141,8 @@ When `DEEPSEEK_SPARK_TELEMETRY_JSONL` is set, the runtime emits:
 - optional CUDA event timings
 - decode-step timing samples
 - CUDA memory before/after
+- routed expert cache deltas, including packed read/materialization time and arena reuse
+  counters when enabled
 
 NVTX ranges cover load, encode, prefill, decode, decode steps, postfill, and deferred
 postfill.

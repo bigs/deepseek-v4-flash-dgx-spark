@@ -33,6 +33,7 @@ class ManifestRow:
 @dataclass(frozen=True)
 class PackedExpertBatch:
     tensors: dict[str, torch.Tensor]
+    tensor_infos: dict[str, dict[str, Any]]
     read_seconds: float
     read_bytes: int
     _storage: bytearray | memoryview | torch.Tensor
@@ -62,6 +63,11 @@ class PackedExpertStore:
         self.native_pinned_staging = os.getenv(
             "DEEPSEEK_SPARK_PACKED_NATIVE_PINNED_STAGING", "0"
         ) in {
+            "1",
+            "true",
+            "yes",
+        }
+        self.native_materializer = os.getenv("DEEPSEEK_SPARK_NATIVE_MATERIALIZER", "0") in {
             "1",
             "true",
             "yes",
@@ -110,15 +116,40 @@ class PackedExpertStore:
         read_seconds = time.monotonic() - start
         if len(storage) != size:
             raise OSError(f"short packed expert read: layer={layer_id} expert={expert_id}")
-        tensors = {
-            target_name: self._tensor_from_storage(storage, tensor_info)
-            for target_name, tensor_info in expert["tensors"].items()
-        }
+        tensor_infos = expert["tensors"]
+        tensors = (
+            {}
+            if self.native_materializer and isinstance(storage, torch.Tensor)
+            else {
+                target_name: self._tensor_from_storage(storage, tensor_info)
+                for target_name, tensor_info in tensor_infos.items()
+            }
+        )
         return PackedExpertBatch(
             tensors=tensors,
+            tensor_infos=tensor_infos,
             read_seconds=read_seconds,
             read_bytes=size,
             _storage=storage,
+        )
+
+    def copy_storage_to_tensors(
+        self,
+        storage: torch.Tensor,
+        targets: list[torch.Tensor],
+        offsets: list[int],
+        *,
+        non_blocking: bool,
+    ) -> int:
+        if self._native_module is None:
+            raise RuntimeError("native packed loader is not enabled")
+        return int(
+            self._native_module.copy_storage_to_tensors(
+                storage,
+                targets,
+                offsets,
+                non_blocking,
+            )
         )
 
     def _read_block(self, fd: int, size: int, offset: int) -> bytearray | memoryview | torch.Tensor:
@@ -261,6 +292,8 @@ class ExpertCacheStats:
     packed_misses: int = 0
     packed_read_seconds: float = 0.0
     packed_read_bytes: int = 0
+    arena_reuses: int = 0
+    arena_allocations: int = 0
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -283,6 +316,8 @@ class ExpertCacheStats:
             "packed_misses": self.packed_misses,
             "packed_read_seconds": self.packed_read_seconds,
             "packed_read_bytes": self.packed_read_bytes,
+            "arena_reuses": self.arena_reuses,
+            "arena_allocations": self.arena_allocations,
         }
 
 
@@ -359,6 +394,13 @@ class ExpertCacheManager:
                 self.stats.packed_read_bytes += read_bytes
             else:
                 self.stats.packed_misses += 1
+
+    def record_arena_acquire(self, *, reused: bool) -> None:
+        with self._lock:
+            if reused:
+                self.stats.arena_reuses += 1
+            else:
+                self.stats.arena_allocations += 1
 
     def insert(self, expert: "LazyRoutedExpert", resident_bytes: int) -> None:
         if not self.enabled:
@@ -463,6 +505,36 @@ class ExpertCacheManager:
 
 _EXPERT_CACHE_MANAGER: ExpertCacheManager | None = None
 _MATERIALIZE_EXECUTOR: ThreadPoolExecutor | None = None
+_EXPERT_ARENA: "ExpertArena | None" = None
+
+
+class ExpertArena:
+    def __init__(self, max_slots: int):
+        self.max_slots = max(0, max_slots)
+        self.enabled = self.max_slots > 0
+        self._lock = threading.Lock()
+        self._pool: list[torch.nn.Module] = []
+
+    @classmethod
+    def from_env(cls) -> "ExpertArena":
+        return cls(int(os.getenv("DEEPSEEK_SPARK_EXPERT_ARENA_SLOTS", "0")))
+
+    def acquire(self, factory) -> tuple[torch.nn.Module, bool]:
+        if not self.enabled:
+            return factory(), False
+        with self._lock:
+            if self._pool:
+                return self._pool.pop(), True
+        return factory(), False
+
+    def release(self, expert: torch.nn.Module) -> bool:
+        if not self.enabled:
+            return False
+        with self._lock:
+            if len(self._pool) >= self.max_slots:
+                return False
+            self._pool.append(expert)
+            return True
 
 
 def configure_expert_cache(max_entries: int | None = None) -> ExpertCacheManager:
@@ -488,6 +560,13 @@ def expert_cache_snapshot() -> dict[str, Any]:
 
 def expert_cache_delta(before: dict[str, Any], after: dict[str, Any]) -> dict[str, Any]:
     return _stats_delta(before, after)
+
+
+def expert_arena() -> ExpertArena:
+    global _EXPERT_ARENA
+    if _EXPERT_ARENA is None:
+        _EXPERT_ARENA = ExpertArena.from_env()
+    return _EXPERT_ARENA
 
 
 def expert_materialize_executor() -> ThreadPoolExecutor | None:
@@ -535,6 +614,11 @@ class LazyRoutedExpert(torch.nn.Module):
             "true",
             "yes",
         }
+        self.native_materializer = os.getenv("DEEPSEEK_SPARK_NATIVE_MATERIALIZER", "0") in {
+            "1",
+            "true",
+            "yes",
+        }
 
     @property
     def prefix(self) -> str:
@@ -551,12 +635,15 @@ class LazyRoutedExpert(torch.nn.Module):
         self.cache_manager.record_miss()
         start = time.monotonic()
         dtype = torch.float4_e2m1fn_x2 if self.args.expert_dtype == "fp4" else None
-        expert = self.official_model.Expert(
-            self.args.dim,
-            self.args.moe_inter_dim,
-            dtype=dtype,
-            swiglu_limit=self.args.swiglu_limit,
-        ).to(device)
+        expert, arena_reused = expert_arena().acquire(
+            lambda: self.official_model.Expert(
+                self.args.dim,
+                self.args.moe_inter_dim,
+                dtype=dtype,
+                swiglu_limit=self.args.swiglu_limit,
+            ).to(device)
+        )
+        self.cache_manager.record_arena_acquire(reused=arena_reused)
         packed_batch = self.weight_store.packed_tensors_for_expert(self.layer_id, self.expert_id)
         if packed_batch is not None:
             self.cache_manager.record_packed_load(
@@ -567,11 +654,42 @@ class LazyRoutedExpert(torch.nn.Module):
         elif self.weight_store.packed_store is not None:
             self.cache_manager.record_packed_load(hit=False)
         copied_bytes = 0
-        for name, param in expert.named_parameters():
+        parameters = list(expert.named_parameters())
+        if (
+            self.native_materializer
+            and packed_batch is not None
+            and isinstance(packed_batch._storage, torch.Tensor)
+            and self.weight_store.packed_store is not None
+        ):
+            native_targets = []
+            native_offsets = []
+            fallback_parameters = []
+            for name, param in parameters:
+                target = f"{self.prefix}.{name}"
+                tensor_info = packed_batch.tensor_infos.get(target)
+                if tensor_info is None:
+                    fallback_parameters.append((name, param))
+                    continue
+                native_targets.append(param.data)
+                native_offsets.append(int(tensor_info["offset"]))
+            if native_targets:
+                copied_bytes += self.weight_store.packed_store.copy_storage_to_tensors(
+                    packed_batch._storage,
+                    native_targets,
+                    native_offsets,
+                    non_blocking=self.non_blocking_param_copy,
+                )
+            parameters = fallback_parameters
+        for name, param in parameters:
             target = f"{self.prefix}.{name}"
             row = self.weight_store.rows_by_target[target]
             if packed_batch is not None and target in packed_batch.tensors:
                 tensor = packed_batch.tensors[target]
+            elif packed_batch is not None and target in packed_batch.tensor_infos:
+                tensor = PackedExpertStore._tensor_from_storage(
+                    packed_batch._storage,
+                    packed_batch.tensor_infos[target],
+                )
             else:
                 tensor = self.weight_store.tensor_for_row(row)
             if row.transform == "reinterpret_int8_as_fp4":
@@ -604,6 +722,8 @@ class LazyRoutedExpert(torch.nn.Module):
             self._drop_cached()
 
     def _drop_cached(self) -> None:
+        if self._expert is not None:
+            expert_arena().release(self._expert)
         self._expert = None
         self._cache_resident_bytes = 0
         empty_cache_mode = os.getenv("DEEPSEEK_SPARK_EMPTY_CACHE_ON_EVICT", "uncached")

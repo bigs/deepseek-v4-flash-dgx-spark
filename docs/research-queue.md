@@ -1,8 +1,8 @@
 # Research Queue
 
-Date: 2026-05-02
+Date: 2026-05-03
 
-This queue reflects the second flash-moe pass and experiments 030-040.
+This queue reflects the second flash-moe pass and experiments 030-046.
 
 ## Current Best Recipe
 
@@ -15,23 +15,29 @@ This queue reflects the second flash-moe pass and experiments 030-040.
 - `DEEPSEEK_SPARK_PACKED_NATIVE_PINNED_STAGING=1`.
 - `DEEPSEEK_SPARK_DIRECT_PARAM_COPY=1`.
 - `DEEPSEEK_SPARK_PARAM_COPY_NON_BLOCKING=1`.
+- `DEEPSEEK_SPARK_NATIVE_MATERIALIZER=1`.
+- `DEEPSEEK_SPARK_EXPERT_ARENA_SLOTS=256`.
 
-Best observed 8-token decode is now the native pinned/direct-copy route-filtered packed
-layout:
+Best controlled deployable 32-token decode is now the E043 full-layout arena recipe:
 
 | Run | Decode | Tok/s |
 | --- | ---: | ---: |
-| E026 no empty cache | 6.434s | 1.243 |
-| E036 reusable staging | 6.408s | 1.248 |
-| E038 native reader | 5.341s | 1.498 |
-| E040 native direct | 5.036s | 1.589 |
+| E041 full native c1024 | 21.022s | 1.522 |
+| E042 native materializer v2 | 21.917s | 1.460 |
+| E043 expert arena 256 | 16.516s | 1.937 |
+| E044 materialize workers 2 | 50.415s | 0.635 |
+| E046 hot-first full layout | 30.899s | 1.036 |
+
+The fastest controlled 8-token matrix row is `full-t8-native-c1024` at 5.213s
+and 1.535 tok/s. The older E040 5.036s route-filtered run remains useful history, but
+E041 is the cleaner same-day comparison point.
 
 ## Updated Queue
 
-1. **Second-stage native materializer**
-   - Move tensor slicing and parameter copy scheduling deeper into native code.
-   - The next target is fewer Python parameter loops and a batched/fused copy plan per
-     expert block.
+1. **Native materializer beyond tensor-copy scheduling**
+   - E042 showed the first native materializer primitive is only a weak/noisy win alone.
+   - The next target is a real packed block plan: fewer per-parameter copies, explicit
+     CUDA streams, and native ownership of staging/copy lifetimes.
 
 2. **Route-trace replay as the screening gate**
    - Use `scripts/replay_packed_expert_trace.py` before full inference runs.
@@ -39,13 +45,17 @@ layout:
 
 3. **Threaded or async packed reads below Python**
    - Replay showed warm threaded reads improved from 11.92 GiB/s to 13.18 GiB/s.
-   - Python-threaded CUDA materialization still regresses; the candidate is lower-level
-     I/O plus explicit handoff, not Python workers doing active CUDA work.
+   - E044 reconfirmed that Python-threaded CUDA materialization is wrong even after
+     native loading plus arena reuse.
+   - The candidate is lower-level I/O plus explicit handoff, not Python workers doing
+     active CUDA work.
 
 4. **Layout locality sweep**
-   - E027 showed the full layout is slower than the route-filtered layout.
-   - Test hot-expert ordering, route-clustered ordering, and per-layer metadata/layout
-     variants with replay first, then full inference.
+   - E041 proved route-filtered layouts are invalid for longer deployment probes because
+     unseen experts fall back to safetensors.
+   - E046 showed simple hot-first ordering from an 8-token trace regresses badly.
+   - Future layout variants need longer route traces, replay screening, and page-cache
+     state controls before full inference.
 
 5. **Persistent KV postfill semantics**
    - Inline postfill makes cache resume nearly free but puts postfill on the request path.
@@ -62,7 +72,10 @@ layout:
 
 - Global LRU for the current runtime. Replay saw fewer misses, but full inference
   regressed badly.
+- Route-filtered packed layouts for deployment claims. They are useful short-probe tools,
+  but E041 showed large packed-miss fallback at 32 tokens.
 - Broad replacement of official FP8/FP4 GEMM kernels. Existing small-shape kernels run,
   and current decode is dominated by packed read plus materialization.
-- Python-threaded expert materialization. It was a regression in E022.
+- Python-threaded expert materialization. It was a regression in E022 and E044.
 - Inline postfill as the default serving policy.
+- Simple hot-first full-layout ordering based on an 8-token route trace.
