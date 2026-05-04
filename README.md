@@ -226,8 +226,8 @@ machine labels from the original run environment.
 
 Near-term optimization work:
 
-- move the materializer further into native C++/CUDA with explicit staging and stream
-  ownership
+- reduce the native CUDA materializer from several per-parameter copies to fewer larger
+  transfers where the packed layout allows
 - replace Python-threaded overlap attempts with native I/O/copy scheduling
 - screen future packed-layout variants with longer route-trace replay before full
   inference

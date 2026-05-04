@@ -23,7 +23,10 @@ def load_native_packed_loader():
     from torch.utils.cpp_extension import load
 
     source = Path(__file__).with_name("native").joinpath("native_packed_loader.cpp")
+    with_cuda = _truthy_env("DEEPSEEK_SPARK_NATIVE_WITH_CUDA")
     extra_cflags = ["-O3", "-std=c++17"]
+    if with_cuda:
+        extra_cflags.append("-DDEEPSEEK_SPARK_WITH_CUDA")
     if os.getenv("DEEPSEEK_SPARK_NATIVE_EXTRA_CFLAGS"):
         extra_cflags.extend(os.getenv("DEEPSEEK_SPARK_NATIVE_EXTRA_CFLAGS", "").split())
     build_directory_value = os.getenv("DEEPSEEK_SPARK_NATIVE_BUILD_DIR")
@@ -35,5 +38,6 @@ def load_native_packed_loader():
         sources=[str(source)],
         extra_cflags=extra_cflags,
         build_directory=str(build_directory) if build_directory is not None else None,
+        with_cuda=with_cuda,
         verbose=_truthy_env("DEEPSEEK_SPARK_NATIVE_VERBOSE"),
     )

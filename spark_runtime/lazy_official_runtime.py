@@ -39,6 +39,13 @@ class PackedExpertBatch:
     _storage: bytearray | memoryview | torch.Tensor
 
 
+@dataclass(frozen=True)
+class NativeExpertCopyPlan:
+    plan: Any
+    parameter_indices: tuple[int, ...]
+    fallback_indices: tuple[int, ...]
+
+
 class PackedExpertStore:
     def __init__(self, layout_path: Path):
         self.layout_path = layout_path
@@ -72,10 +79,28 @@ class PackedExpertStore:
             "true",
             "yes",
         }
+        self.native_copy_plan = os.getenv("DEEPSEEK_SPARK_NATIVE_COPY_PLAN", "0") in {
+            "1",
+            "true",
+            "yes",
+        }
+        self.native_fused_materializer = os.getenv(
+            "DEEPSEEK_SPARK_NATIVE_FUSED_MATERIALIZER", "0"
+        ) in {
+            "1",
+            "true",
+            "yes",
+        }
+        self.native_cuda_memcpy = os.getenv("DEEPSEEK_SPARK_NATIVE_CUDA_MEMCPY", "0") in {
+            "1",
+            "true",
+            "yes",
+        }
         self._native_module = load_native_packed_loader() if self.native_loader else None
         self._fds: dict[Path, int] = {}
         self._lock = threading.Lock()
         self._thread_local = threading.local()
+        self._copy_plans: dict[tuple[int, int, tuple[str, ...]], NativeExpertCopyPlan] = {}
 
     @classmethod
     def from_env(cls) -> "PackedExpertStore | None":
@@ -99,24 +124,16 @@ class PackedExpertStore:
             return fd
 
     def tensors_for_expert(self, layer_id: int, expert_id: int) -> PackedExpertBatch | None:
-        layer = self.layers.get(str(layer_id))
-        if layer is None:
+        entry = self._expert_entry(layer_id, expert_id)
+        if entry is None:
             return None
-        expert = layer.get("experts", {}).get(str(expert_id))
-        if expert is None:
-            return None
-        path = Path(layer["path"])
-        if not path.is_absolute():
-            path = self.base_dir / path
-        offset = int(expert["offset"])
-        size = int(expert["bytes"])
+        path, offset, size, tensor_infos = entry
         fd = self._fd(path)
         start = time.monotonic()
         storage = self._read_block(fd, size, offset)
         read_seconds = time.monotonic() - start
         if len(storage) != size:
             raise OSError(f"short packed expert read: layer={layer_id} expert={expert_id}")
-        tensor_infos = expert["tensors"]
         tensors = (
             {}
             if self.native_materializer and isinstance(storage, torch.Tensor)
@@ -132,6 +149,102 @@ class PackedExpertStore:
             read_bytes=size,
             _storage=storage,
         )
+
+    def _expert_entry(
+        self,
+        layer_id: int,
+        expert_id: int,
+    ) -> tuple[Path, int, int, dict[str, Any]] | None:
+        layer = self.layers.get(str(layer_id))
+        if layer is None:
+            return None
+        expert = layer.get("experts", {}).get(str(expert_id))
+        if expert is None:
+            return None
+        path = Path(layer["path"])
+        if not path.is_absolute():
+            path = self.base_dir / path
+        return path, int(expert["offset"]), int(expert["bytes"]), expert["tensors"]
+
+    def native_plan_for_expert(
+        self,
+        layer_id: int,
+        expert_id: int,
+        prefix: str,
+        parameters: list[tuple[str, torch.nn.Parameter]],
+    ) -> NativeExpertCopyPlan | None:
+        if not self.native_copy_plan or self._native_module is None:
+            return None
+        entry = self._expert_entry(layer_id, expert_id)
+        if entry is None:
+            return None
+        _, _, _, tensor_infos = entry
+        parameter_names = tuple(name for name, _ in parameters)
+        key = (layer_id, expert_id, parameter_names)
+        plan = self._copy_plans.get(key)
+        if plan is not None:
+            return plan
+        offsets = []
+        sizes = []
+        parameter_indices = []
+        fallback_indices = []
+        for index, (name, param) in enumerate(parameters):
+            target = f"{prefix}.{name}"
+            tensor_info = tensor_infos.get(target)
+            if tensor_info is None:
+                fallback_indices.append(index)
+                continue
+            offsets.append(int(tensor_info["offset"]))
+            sizes.append(param.numel() * param.element_size())
+            parameter_indices.append(index)
+        native_plan = (
+            self._native_module.ExpertCopyPlan(offsets, sizes)
+            if offsets
+            else None
+        )
+        plan = NativeExpertCopyPlan(
+            plan=native_plan,
+            parameter_indices=tuple(parameter_indices),
+            fallback_indices=tuple(fallback_indices),
+        )
+        self._copy_plans[key] = plan
+        return plan
+
+    def read_and_copy_with_plan(
+        self,
+        layer_id: int,
+        expert_id: int,
+        plan: Any,
+        targets: list[torch.Tensor],
+        *,
+        non_blocking: bool,
+    ) -> tuple[int, int, float, float] | None:
+        if self._native_module is None:
+            raise RuntimeError("native packed loader is not enabled")
+        entry = self._expert_entry(layer_id, expert_id)
+        if entry is None:
+            return None
+        path, offset, size, _ = entry
+        fd = self._fd(path)
+        staging = self._native_staging(size)
+        if self.native_cuda_memcpy:
+            read_bytes, copied_bytes, read_seconds, copy_seconds = plan.read_into_and_copy_cuda(
+                fd,
+                staging,
+                size,
+                offset,
+                targets,
+            )
+        else:
+            read_bytes, copied_bytes, read_seconds, copy_seconds = plan.read_into_and_copy(
+                fd,
+                staging,
+                size,
+                offset,
+                targets,
+                non_blocking,
+            )
+        return int(read_bytes), int(copied_bytes), float(read_seconds), float(copy_seconds)
 
     def copy_storage_to_tensors(
         self,
@@ -152,24 +265,41 @@ class PackedExpertStore:
             )
         )
 
+    def copy_storage_with_plan(
+        self,
+        plan: Any,
+        storage: torch.Tensor,
+        targets: list[torch.Tensor],
+        *,
+        non_blocking: bool,
+    ) -> int:
+        if self._native_module is None:
+            raise RuntimeError("native packed loader is not enabled")
+        if self.native_cuda_memcpy:
+            return int(plan.copy_storage_to_tensors_cuda(storage, targets))
+        return int(plan.copy_storage_to_tensors(storage, targets, non_blocking))
+
+    def _native_staging(self, size: int) -> torch.Tensor:
+        staging = getattr(self._thread_local, "packed_native_tensor", None)
+        if (
+            staging is None
+            or staging.numel() < size
+            or bool(getattr(self._thread_local, "packed_native_pinned", False))
+            != self.native_pinned_staging
+        ):
+            staging = torch.empty(
+                size,
+                dtype=torch.uint8,
+                device="cpu",
+                pin_memory=self.native_pinned_staging,
+            )
+            self._thread_local.packed_native_tensor = staging
+            self._thread_local.packed_native_pinned = self.native_pinned_staging
+        return staging[:size]
+
     def _read_block(self, fd: int, size: int, offset: int) -> bytearray | memoryview | torch.Tensor:
         if self.native_loader:
-            staging = getattr(self._thread_local, "packed_native_tensor", None)
-            if (
-                staging is None
-                or staging.numel() < size
-                or bool(getattr(self._thread_local, "packed_native_pinned", False))
-                != self.native_pinned_staging
-            ):
-                staging = torch.empty(
-                    size,
-                    dtype=torch.uint8,
-                    device="cpu",
-                    pin_memory=self.native_pinned_staging,
-                )
-                self._thread_local.packed_native_tensor = staging
-                self._thread_local.packed_native_pinned = self.native_pinned_staging
-            view = staging[:size]
+            view = self._native_staging(size)
             read_bytes = self._native_module.read_into(fd, view, size, offset)
             if read_bytes != size:
                 return view[:read_bytes]
@@ -644,42 +774,113 @@ class LazyRoutedExpert(torch.nn.Module):
             ).to(device)
         )
         self.cache_manager.record_arena_acquire(reused=arena_reused)
-        packed_batch = self.weight_store.packed_tensors_for_expert(self.layer_id, self.expert_id)
-        if packed_batch is not None:
-            self.cache_manager.record_packed_load(
-                hit=True,
-                seconds=packed_batch.read_seconds,
-                read_bytes=packed_batch.read_bytes,
-            )
-        elif self.weight_store.packed_store is not None:
-            self.cache_manager.record_packed_load(hit=False)
         copied_bytes = 0
         parameters = list(expert.named_parameters())
+        packed_store = self.weight_store.packed_store
+        native_plan = (
+            packed_store.native_plan_for_expert(
+                self.layer_id,
+                self.expert_id,
+                self.prefix,
+                parameters,
+            )
+            if self.native_materializer and packed_store is not None
+            else None
+        )
+        packed_batch: PackedExpertBatch | None = None
+        packed_load_recorded = False
+        if (
+            native_plan is not None
+            and native_plan.plan is not None
+            and packed_store is not None
+            and packed_store.native_fused_materializer
+            and not native_plan.fallback_indices
+        ):
+            targets = [
+                parameters[index][1].data
+                for index in native_plan.parameter_indices
+            ]
+            native_result = packed_store.read_and_copy_with_plan(
+                self.layer_id,
+                self.expert_id,
+                native_plan.plan,
+                targets,
+                non_blocking=self.non_blocking_param_copy,
+            )
+            if native_result is not None:
+                read_bytes, native_copied_bytes, read_seconds, _copy_seconds = native_result
+                self.cache_manager.record_packed_load(
+                    hit=True,
+                    seconds=read_seconds,
+                    read_bytes=read_bytes,
+                )
+                packed_load_recorded = True
+                copied_bytes += native_copied_bytes
+                parameters = []
+            else:
+                self.cache_manager.record_packed_load(hit=False)
+                packed_load_recorded = True
+        if parameters:
+            packed_batch = self.weight_store.packed_tensors_for_expert(
+                self.layer_id,
+                self.expert_id,
+            )
+            if packed_batch is not None and not packed_load_recorded:
+                self.cache_manager.record_packed_load(
+                    hit=True,
+                    seconds=packed_batch.read_seconds,
+                    read_bytes=packed_batch.read_bytes,
+                )
+                packed_load_recorded = True
+            elif (
+                packed_batch is None
+                and packed_store is not None
+                and not packed_load_recorded
+            ):
+                self.cache_manager.record_packed_load(hit=False)
+                packed_load_recorded = True
         if (
             self.native_materializer
             and packed_batch is not None
             and isinstance(packed_batch._storage, torch.Tensor)
-            and self.weight_store.packed_store is not None
+            and packed_store is not None
         ):
-            native_targets = []
-            native_offsets = []
-            fallback_parameters = []
-            for name, param in parameters:
-                target = f"{self.prefix}.{name}"
-                tensor_info = packed_batch.tensor_infos.get(target)
-                if tensor_info is None:
-                    fallback_parameters.append((name, param))
-                    continue
-                native_targets.append(param.data)
-                native_offsets.append(int(tensor_info["offset"]))
-            if native_targets:
-                copied_bytes += self.weight_store.packed_store.copy_storage_to_tensors(
-                    packed_batch._storage,
-                    native_targets,
-                    native_offsets,
-                    non_blocking=self.non_blocking_param_copy,
-                )
-            parameters = fallback_parameters
+            if native_plan is not None and native_plan.plan is not None:
+                native_targets = [
+                    parameters[index][1].data
+                    for index in native_plan.parameter_indices
+                ]
+                if native_targets:
+                    copied_bytes += packed_store.copy_storage_with_plan(
+                        native_plan.plan,
+                        packed_batch._storage,
+                        native_targets,
+                        non_blocking=self.non_blocking_param_copy,
+                    )
+                parameters = [
+                    parameters[index]
+                    for index in native_plan.fallback_indices
+                ]
+            else:
+                native_targets = []
+                native_offsets = []
+                fallback_parameters = []
+                for name, param in parameters:
+                    target = f"{self.prefix}.{name}"
+                    tensor_info = packed_batch.tensor_infos.get(target)
+                    if tensor_info is None:
+                        fallback_parameters.append((name, param))
+                        continue
+                    native_targets.append(param.data)
+                    native_offsets.append(int(tensor_info["offset"]))
+                if native_targets:
+                    copied_bytes += packed_store.copy_storage_to_tensors(
+                        packed_batch._storage,
+                        native_targets,
+                        native_offsets,
+                        non_blocking=self.non_blocking_param_copy,
+                    )
+                parameters = fallback_parameters
         for name, param in parameters:
             target = f"{self.prefix}.{name}"
             row = self.weight_store.rows_by_target[target]

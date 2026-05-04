@@ -1,0 +1,89 @@
+==== 2026-05-04T00:28:00-04:00 guarded docker run start ====
+command: docker run --rm --name native-cuda-copy-smoke-e049 --runtime=nvidia --gpus all --memory 24g --memory-swap 28g -v /home/cole/deepseek-v4-flash-dgx-spark:/repo:ro -v /home/cole/runs/deepseek-v4-flash:/runs -e PYTHONPATH=/repo -e DEEPSEEK_SPARK_NATIVE_BUILD_DIR=/runs/torch-extensions/native-packed-loader-cuda-e049 -e DEEPSEEK_SPARK_NATIVE_WITH_CUDA=1 --entrypoint /bin/bash deepseek-v4-flash-spark:tilelang -lc 'cd /repo && python3 - <<"PY"
+import os
+import tempfile
+import torch
+from spark_runtime.native_packed_loader import load_native_packed_loader
+native = load_native_packed_loader()
+storage = torch.arange(64, dtype=torch.uint8, pin_memory=True)
+plan = native.ExpertCopyPlan([0, 16], [16, 8])
+a = torch.empty(4, dtype=torch.int32, device="cuda")
+b = torch.empty(8, dtype=torch.uint8, device="cuda")
+copied = plan.copy_storage_to_tensors_cuda(storage, [a, b])
+torch.cuda.synchronize()
+assert copied == 24, copied
+assert torch.equal(a.cpu().view(torch.uint8), storage[:16])
+assert torch.equal(b.cpu(), storage[16:24])
+with tempfile.NamedTemporaryFile(delete=False) as handle:
+    path = handle.name
+    handle.write(bytes(range(64)))
+fd = os.open(path, os.O_RDONLY)
+try:
+    staging = torch.empty(64, dtype=torch.uint8, pin_memory=True)
+    c = torch.empty(4, dtype=torch.int32, device="cuda")
+    d = torch.empty(8, dtype=torch.uint8, device="cuda")
+    read_bytes, copied_bytes, read_seconds, copy_seconds = plan.read_into_and_copy_cuda(fd, staging, 64, 0, [c, d])
+    torch.cuda.synchronize()
+finally:
+    os.close(fd)
+    os.unlink(path)
+assert read_bytes == 64, read_bytes
+assert copied_bytes == 24, copied_bytes
+assert torch.equal(c.cpu().view(torch.uint8), storage[:16])
+assert torch.equal(d.cpu(), storage[16:24])
+print({"copied": copied, "read_bytes": read_bytes, "copy_seconds": copy_seconds, "plan_count": plan.count})
+PY'
+guard: memory=24g memory_swap=28g min_mem_available_gib=8.0 timeout_seconds=900.0
+[2026-05-04T00:28:00-04:00] guard: initial MemAvailable=118.43 GiB
+[2026-05-04T00:28:00-04:00] guard: elapsed=0.0s MemAvailable=118.43 GiB
+[2026-05-04T00:28:02-04:00] guard: elapsed=2.0s MemAvailable=118.11 GiB
+[2026-05-04T00:28:04-04:00] guard: elapsed=4.0s MemAvailable=117.97 GiB
+[2026-05-04T00:28:06-04:00] guard: elapsed=6.0s MemAvailable=117.78 GiB
+[2026-05-04T00:28:08-04:00] guard: elapsed=8.0s MemAvailable=117.53 GiB
+[2026-05-04T00:28:10-04:00] guard: elapsed=10.0s MemAvailable=117.40 GiB
+[2026-05-04T00:28:12-04:00] guard: elapsed=12.0s MemAvailable=117.28 GiB
+[2026-05-04T00:28:14-04:00] guard: elapsed=14.0s MemAvailable=117.02 GiB
+[2026-05-04T00:28:16-04:00] guard: elapsed=16.0s MemAvailable=116.76 GiB
+[2026-05-04T00:28:18-04:00] guard: elapsed=18.0s MemAvailable=116.70 GiB
+[2026-05-04T00:28:20-04:00] guard: elapsed=20.0s MemAvailable=116.57 GiB
+[2026-05-04T00:28:22-04:00] guard: elapsed=22.0s MemAvailable=116.53 GiB
+[2026-05-04T00:28:24-04:00] guard: elapsed=24.0s MemAvailable=116.51 GiB
+[2026-05-04T00:28:26-04:00] guard: elapsed=26.0s MemAvailable=116.48 GiB
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:435: UserWarning:
+    Found GPU0 NVIDIA GB10 which is of cuda capability 12.1.
+    Minimum and Maximum cuda capability supported by this version of PyTorch is
+    (8.0) - (12.0)
+
+  queued_call()
+{'copied': 24, 'read_bytes': 64, 'copy_seconds': 1.8768e-05, 'plan_count': 2}
+[2026-05-04T00:28:28-04:00] guard: elapsed=28.0s MemAvailable=117.47 GiB
+[2026-05-04T00:28:30-04:00] guard: docker exited return_code=0 reason=process exited
+[2026-05-04T00:28:30-04:00] guard: recovering NVIDIA driver memory
+[2026-05-04T00:28:30-04:00] guard: sudo -n systemctl stop nvidia-persistenced
+[2026-05-04T00:28:30-04:00] guard: sudo -n modprobe -r nvidia_uvm nvidia_drm nvidia_modeset nvidia
+[2026-05-04T00:28:31-04:00] guard: sudo -n modprobe nvidia
+[2026-05-04T00:28:34-04:00] guard: sudo -n modprobe nvidia_uvm
+[2026-05-04T00:28:34-04:00] guard: sudo -n systemctl start nvidia-persistenced
+               total        used        free      shared  buff/cache   available
+Mem:           121Gi       3.6Gi        62Gi       164Ki        56Gi       118Gi
+Swap:           15Gi        60Mi        15Gi
+Mon May  4 00:28:35 2026
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 590.48.01              Driver Version: 590.48.01      CUDA Version: 13.1     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GB10                    On  |   0000000F:01:00.0 Off |                  N/A |
+| N/A   39C    P0             14W /  N/A  | Not Supported          |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

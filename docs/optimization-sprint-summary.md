@@ -4,7 +4,7 @@ Date: 2026-05-02
 
 Host: `spark-66c9`
 
-Scope: experiments 018-046.
+Scope: experiments 018-047.
 
 ## Result Table
 
@@ -26,6 +26,7 @@ Scope: experiments 018-046.
 | E043 | 256-slot expert arena | 32 | 91.150s | 16.516s | 1.94 | Current best deployable recipe. |
 | E044 | Python materialization workers | 32 | 92.488s | 50.415s | 0.63 | Disable; overlap must move below Python. |
 | E046 | hot-first full layout | 32 | 91.791s | 30.899s | 1.04 | Simple hot-first layout is a regression. |
+| E049 | native CUDA materializer | 32 | 92.029s | 21.901s | 1.46 | Correct and faster than same-window baseline, but not a new absolute best. |
 
 ## Integrated Changes
 
@@ -43,6 +44,7 @@ Scope: experiments 018-046.
 - Native materializer primitive for packed storage-to-parameter copies.
 - Expert arena for reusing evicted expert modules.
 - Hot-first full-layout repacker for physical-order experiments.
+- Native copy-plan and CUDA `cudaMemcpyAsync` materializer path.
 
 ## Main Finding
 
@@ -58,8 +60,8 @@ staging path.
 
 ## Next Experiments
 
-1. Native materializer v3: own packed-block copy planning, staging lifetime, and CUDA
-   stream handoff below Python.
+1. Native materializer v3: reduce planned CUDA copies to fewer larger transfers and
+   batch a layer's routed misses into one native call.
 2. Route-trace replay gate: screen cache/layout/order variants on longer traces before
    full inference.
 3. Native deterministic overlap: CPU I/O plus copy scheduling below Python; do not use

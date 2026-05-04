@@ -1,0 +1,80 @@
+==== 2026-05-04T00:17:10-04:00 guarded docker run start ====
+command: docker run --rm --name native-copy-plan-smoke-e047 --runtime=nvidia --gpus all --memory 24g --memory-swap 28g -v /home/cole/deepseek-v4-flash-dgx-spark:/repo:ro -v /home/cole/runs/deepseek-v4-flash:/runs -e PYTHONPATH=/repo -e DEEPSEEK_SPARK_NATIVE_BUILD_DIR=/runs/torch-extensions/native-packed-loader-e047 --entrypoint /bin/bash deepseek-v4-flash-spark:tilelang -lc 'cd /repo && python3 - <<"PY"
+import os
+import tempfile
+import torch
+from spark_runtime.native_packed_loader import load_native_packed_loader
+native = load_native_packed_loader()
+storage = torch.arange(64, dtype=torch.uint8)
+a = torch.empty(4, dtype=torch.int32)
+b = torch.empty(8, dtype=torch.uint8)
+plan = native.ExpertCopyPlan([0, 16], [16, 8])
+copied = plan.copy_storage_to_tensors(storage, [a, b], False)
+assert copied == 24, copied
+assert torch.equal(a.view(torch.uint8), storage[:16])
+assert torch.equal(b, storage[16:24])
+with tempfile.NamedTemporaryFile(delete=False) as handle:
+    path = handle.name
+    handle.write(bytes(range(64)))
+fd = os.open(path, os.O_RDONLY)
+try:
+    staging = torch.empty(64, dtype=torch.uint8)
+    c = torch.empty(4, dtype=torch.int32)
+    d = torch.empty(8, dtype=torch.uint8)
+    read_bytes, copied_bytes, read_seconds, copy_seconds = plan.read_into_and_copy(fd, staging, 64, 0, [c, d], False)
+finally:
+    os.close(fd)
+    os.unlink(path)
+assert read_bytes == 64, read_bytes
+assert copied_bytes == 24, copied_bytes
+assert torch.equal(c.view(torch.uint8), storage[:16])
+assert torch.equal(d, storage[16:24])
+print({"copied": copied, "read_bytes": read_bytes, "copy_seconds": copy_seconds, "plan_count": plan.count})
+PY'
+guard: memory=24g memory_swap=28g min_mem_available_gib=8.0 timeout_seconds=600.0
+[2026-05-04T00:17:10-04:00] guard: initial MemAvailable=118.45 GiB
+[2026-05-04T00:17:10-04:00] guard: elapsed=0.0s MemAvailable=118.45 GiB
+[2026-05-04T00:17:12-04:00] guard: elapsed=2.0s MemAvailable=118.17 GiB
+[2026-05-04T00:17:14-04:00] guard: elapsed=4.0s MemAvailable=118.03 GiB
+[2026-05-04T00:17:16-04:00] guard: elapsed=6.0s MemAvailable=117.77 GiB
+[2026-05-04T00:17:18-04:00] guard: elapsed=8.0s MemAvailable=117.56 GiB
+[2026-05-04T00:17:20-04:00] guard: elapsed=10.0s MemAvailable=117.37 GiB
+[2026-05-04T00:17:22-04:00] guard: elapsed=12.0s MemAvailable=117.25 GiB
+[2026-05-04T00:17:24-04:00] guard: elapsed=14.0s MemAvailable=116.95 GiB
+[2026-05-04T00:17:26-04:00] guard: elapsed=16.0s MemAvailable=116.80 GiB
+[2026-05-04T00:17:28-04:00] guard: elapsed=18.0s MemAvailable=116.69 GiB
+[2026-05-04T00:17:30-04:00] guard: elapsed=20.0s MemAvailable=116.60 GiB
+[2026-05-04T00:17:32-04:00] guard: elapsed=22.0s MemAvailable=116.56 GiB
+[2026-05-04T00:17:34-04:00] guard: elapsed=24.0s MemAvailable=116.54 GiB
+[2026-05-04T00:17:36-04:00] guard: elapsed=26.0s MemAvailable=117.56 GiB
+{'copied': 24, 'read_bytes': 64, 'copy_seconds': 4.2352e-05, 'plan_count': 2}
+[2026-05-04T00:17:38-04:00] guard: docker exited return_code=0 reason=process exited
+[2026-05-04T00:17:38-04:00] guard: recovering NVIDIA driver memory
+[2026-05-04T00:17:38-04:00] guard: sudo -n systemctl stop nvidia-persistenced
+[2026-05-04T00:17:38-04:00] guard: sudo -n modprobe -r nvidia_uvm nvidia_drm nvidia_modeset nvidia
+[2026-05-04T00:17:39-04:00] guard: sudo -n modprobe nvidia
+[2026-05-04T00:17:41-04:00] guard: sudo -n modprobe nvidia_uvm
+[2026-05-04T00:17:41-04:00] guard: sudo -n systemctl start nvidia-persistenced
+               total        used        free      shared  buff/cache   available
+Mem:           121Gi       3.5Gi        77Gi       164Ki        41Gi       118Gi
+Swap:           15Gi        60Mi        15Gi
+Mon May  4 00:17:43 2026
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 590.48.01              Driver Version: 590.48.01      CUDA Version: 13.1     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GB10                    On  |   0000000F:01:00.0 Off |                  N/A |
+| N/A   38C    P0             14W /  N/A  | Not Supported          |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

@@ -1,8 +1,8 @@
 # Research Queue
 
-Date: 2026-05-03
+Date: 2026-05-04
 
-This queue reflects the second flash-moe pass and experiments 030-046.
+This queue reflects the second flash-moe pass and experiments 030-047.
 
 ## Current Best Recipe
 
@@ -27,6 +27,7 @@ Best controlled deployable 32-token decode is now the E043 full-layout arena rec
 | E043 expert arena 256 | 16.516s | 1.937 |
 | E044 materialize workers 2 | 50.415s | 0.635 |
 | E046 hot-first full layout | 30.899s | 1.036 |
+| E049 native CUDA materializer | 21.901s | 1.461 |
 
 The fastest controlled 8-token matrix row is `full-t8-native-c1024` at 5.213s
 and 1.535 tok/s. The older E040 5.036s route-filtered run remains useful history, but
@@ -36,8 +37,11 @@ E041 is the cleaner same-day comparison point.
 
 1. **Native materializer beyond tensor-copy scheduling**
    - E042 showed the first native materializer primitive is only a weak/noisy win alone.
-   - The next target is a real packed block plan: fewer per-parameter copies, explicit
-     CUDA streams, and native ownership of staging/copy lifetimes.
+   - E047 showed native copy plans are correct but not enough by themselves.
+   - E049 showed planned `cudaMemcpyAsync` is a useful primitive against a same-window
+     baseline, but not yet a new absolute best.
+   - The next target is fewer larger native transfers and one native call per layer's
+     routed misses.
 
 2. **Route-trace replay as the screening gate**
    - Use `scripts/replay_packed_expert_trace.py` before full inference runs.

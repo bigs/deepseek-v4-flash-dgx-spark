@@ -63,6 +63,10 @@ engine so the official DeepSeek V4 encoding path can render them.
 | `DEEPSEEK_SPARK_DIRECT_PARAM_COPY` | `0` | Copy CPU expert tensor views directly into destination parameters. |
 | `DEEPSEEK_SPARK_PARAM_COPY_NON_BLOCKING` | `0` | Request non-blocking parameter copies. Use with pinned native staging. |
 | `DEEPSEEK_SPARK_NATIVE_MATERIALIZER` | `0` | Use the native extension to copy packed storage slices into expert parameters. |
+| `DEEPSEEK_SPARK_NATIVE_COPY_PLAN` | `0` | Cache native per-expert offset/size plans for parameter materialization. |
+| `DEEPSEEK_SPARK_NATIVE_FUSED_MATERIALIZER` | `0` | Let a native copy plan read a packed block and materialize targets in one call. |
+| `DEEPSEEK_SPARK_NATIVE_WITH_CUDA` | `0` | Build the native extension with CUDA runtime support. |
+| `DEEPSEEK_SPARK_NATIVE_CUDA_MEMCPY` | `0` | Use planned `cudaMemcpyAsync` from CPU staging into CUDA parameter storage. |
 | `DEEPSEEK_SPARK_EXPERT_ARENA_SLOTS` | `0` | Reuse evicted expert modules from an arena instead of reallocating each miss. |
 | `DEEPSEEK_SPARK_EXPERT_MATERIALIZE_WORKERS` | `0` | Experimental Python materialization workers. E044 regressed; leave disabled. |
 
