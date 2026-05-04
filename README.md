@@ -136,7 +136,28 @@ If unset, the runtime looks for `/repo/weight-manifest.csv`.
 
 ## Serving
 
-Inside the container:
+On the Spark host, the preferred launcher is the guarded current-best recipe:
+
+```bash
+scripts/launch_current_best_server_guarded.sh
+```
+
+Useful overrides:
+
+```bash
+MODEL_DIR=$HOME/models/deepseek-v4-flash/hf \
+RUN_DIR=$HOME/runs/deepseek-v4-flash \
+PORT=18080 \
+scripts/launch_current_best_server_guarded.sh
+```
+
+The script starts the OpenAI-compatible server with the current E050 recipe: full packed
+layout, native packed loader, native CUDA materializer, layer-aware expert cache, and a
+256-slot expert arena. It also runs under the guarded Docker wrapper so failed CUDA
+experiments recover driver memory on exit. By default it publishes
+`127.0.0.1:18080` on the Spark host.
+
+Inside an already-running container, the equivalent environment is:
 
 ```bash
 export DEEPSEEK_SPARK_MODEL_DIR=/model

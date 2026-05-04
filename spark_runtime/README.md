@@ -46,6 +46,15 @@ engine so the official DeepSeek V4 encoding path can render them.
 
 ## Configuration
 
+For real Spark serving, prefer the repo-level launcher:
+
+```bash
+scripts/launch_current_best_server_guarded.sh
+```
+
+It applies the current E050 best recipe and starts `spark_runtime.server:app` inside the
+guarded runtime container.
+
 `config_from_env()` reads:
 
 | Variable | Default | Purpose |

@@ -64,7 +64,7 @@ def parse_args() -> argparse.Namespace:
         "--timeout-seconds",
         type=float,
         default=1800.0,
-        help="Kill container after this many seconds.",
+        help="Kill container after this many seconds. Use 0 to disable the timeout.",
     )
     parser.add_argument("--poll-interval", type=float, default=2.0)
     parser.add_argument(
@@ -73,6 +73,13 @@ def parse_args() -> argparse.Namespace:
         default=[],
         metavar="HOST:CONTAINER[:MODE]",
         help="Bind mount passed to docker -v. May be repeated.",
+    )
+    parser.add_argument(
+        "--publish",
+        action="append",
+        default=[],
+        metavar="[HOST_IP:]HOST_PORT:CONTAINER_PORT",
+        help="Port mapping passed to docker -p. May be repeated.",
     )
     parser.add_argument(
         "--env",
@@ -114,6 +121,8 @@ def build_docker_command(args: argparse.Namespace) -> list[str]:
         cmd.extend(["--memory-swap", args.memory_swap])
     for mount in args.mount:
         cmd.extend(["-v", mount])
+    for publish in args.publish:
+        cmd.extend(["-p", publish])
     for env in args.env:
         cmd.extend(["-e", env])
     if args.entrypoint:
@@ -200,7 +209,7 @@ def main() -> int:
                 except Exception as exc:
                     print(f"[{timestamp()}] guard: meminfo read failed: {exc!r}", file=log)
 
-                if elapsed > args.timeout_seconds:
+                if args.timeout_seconds > 0 and elapsed > args.timeout_seconds:
                     reason = f"timeout after {elapsed:.1f}s"
                     docker_kill(args.name, log)
                     break
